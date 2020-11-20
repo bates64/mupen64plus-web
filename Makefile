@@ -9,8 +9,8 @@
 GAMES_DIR ?= ./games
 ROM_DIR_NAME ?= roms
 ROMS_DIR ?= $(abspath $(ROM_DIR_NAME))
-ROM ?= m64p_test_rom.v64
-DEFAULT_ROM := m64p_test_rom.v64
+ROM ?= super_mario_64.z64
+DEFAULT_ROM := super_mario_64.z64
 PLATFORM ?= web
 BIN_DIR ?= $(abspath ./bin/$(PLATFORM))
 SCRIPTS_DIR := ./scripts
@@ -60,13 +60,12 @@ TARGET_HTML ?= index.html
 INDEX_TEMPLATE = $(abspath $(SCRIPTS_DIR)/index.template.html)
 MODULE_JS = module.js
 
-BOOST_DIR := ./boost_1_59_0
+BOOST_DIR := ./boost_1_74_0
 BOOST_LIB_DIR = $(abspath $(BOOST_DIR)/stage/lib)
 BOOST_FILESYSTEM_LIB = $(BOOST_LIB_DIR)/libboost_filesystem.a
 
 
 PLUGINS = $(PLUGINS_DIR)/$(CORE_LIB) \
-	$(PLUGINS_DIR)/$(AUDIO_LIB) \
 	$(PLUGINS_DIR)/$(VIDEO_LIB) \
 	$(PLUGINS_DIR)/$(INPUT_LIB) \
 	$(PLUGINS_DIR)/$(RSP_LIB) \
@@ -83,7 +82,7 @@ INPUT_FILES = \
 	$(BIN_DIR)/data/mupen64plus.cfg \
 	$(BIN_DIR)/data/mupen64plus.ini \
 
-OPT_LEVEL ?= -O3
+OPT_LEVEL ?= -O2
 DEBUG_LEVEL ?=
 
 #MEMORY = 524288
@@ -125,8 +124,8 @@ GLIDE_CFG_DIR := cfg/glide
 DATA_DIR := mupen64plus-core/data
 
 CFG_DIR := $(GLIDE_CFG_DIR)
-ifdef rice
-		CFG_DIR := $(RICE_CFG_DIR)
+ifndef rice
+	CFG_DIR := $(RICE_CFG_DIR)
 endif
 
 NATIVE_ARGS ?=
@@ -220,7 +219,7 @@ DEBUG_LEVEL = -g2 -s ASSERTIONS=1
 
 else
 
-OPT_LEVEL = -O3 -s AGGRESSIVE_VARIABLE_ELIMINATION=1
+OPT_LEVEL = -O0 -s AGGRESSIVE_VARIABLE_ELIMINATION=1
 
 endif
 
@@ -231,8 +230,8 @@ OPT_FLAGS := $(OPT_LEVEL) \
 			-DEMSCRIPTEN=1 \
 			-DUSE_FRAMESKIPPER=1
 
-#$(PLUGINS_DIR)/%.js : %/projects/unix/%.js
-#	cp "$<" "$@"
+$(PLUGINS_DIR)/%.js : %/projects/unix/%.js
+	cp "$<" "$@"
 
 # libmupen64plus.so.2 deviates from standard naming
 $(PLUGINS_DIR)/$(CORE_LIB) : $(CORE_DIR)/$(CORE_LIB)
@@ -248,8 +247,8 @@ $(PLUGINS_DIR)/$(VIDEO_LIB) : $(VIDEO_DIR)/$(VIDEO_LIB)
 	cp "$<" "$@"
 
 $(PLUGINS_DIR)/$(RICE_VIDEO_LIB) : $(RICE_VIDEO_DIR)/$(RICE_VIDEO_LIB)
-		mkdir -p $(PLUGINS_DIR)
-		cp -f "$<" "$@"
+	mkdir -p $(PLUGINS_DIR)
+	cp -f "$<" "$@"
 
 $(PLUGINS_DIR)/$(INPUT_LIB) : $(INPUT_DIR)/$(INPUT_LIB)
 	mkdir -p $(PLUGINS_DIR)
@@ -268,8 +267,8 @@ $(BIN_DIR) :
 	#Creating output directory
 	mkdir -p $(BIN_DIR)
 
-$(BOOST_FILESYSTEM_LIB):
-	cd $(BOOST_DIR) && ./bootstrap.sh && ./b2 --test-config=user-config.jam toolset=emscripten link=static --with-filesystem
+#$(BOOST_FILESYSTEM_LIB):
+#	cd $(BOOST_DIR) && ./bootstrap.sh && ./b2 --test-config=user-config.jam toolset=emscripten link=static
 
 rice: $(RICE_VIDEO_DIR)/$(RICE_VIDEO_LIB)
 
@@ -291,8 +290,8 @@ $(RICE_VIDEO_DIR)/$(RICE_VIDEO_LIB):
 			GL_CFLAGS="" \
 			GLU_CFLAGS="" \
 			V=1 \
-			LOADLIBES="../../../boost_1_59_0/stage/lib/libboost_filesystem.a ../../../boost_1_59_0/stage/lib/libboost_system.a" \
-			OPTFLAGS="$(OPT_FLAGS) -s FULL_ES2=1 -DNO_FILTER_THREAD=1 -s SIDE_MODULE=1 -I../../../boost_1_59_0" \
+			LOADLIBES="" \
+			OPTFLAGS="$(OPT_FLAGS) -s FULL_ES2=1 -DNO_FILTER_THREAD=1 -s SIDE_MODULE=1" \
 			all
 
 # input files helpers
@@ -335,7 +334,8 @@ $(BIN_DIR)/$(TARGET_HTML): $(INDEX_TEMPLATE) $(PLUGINS) $(INPUT_FILES)
 			UNAME=Linux \
 			EMSCRIPTEN=1 \
 			EXEEXT=".html" \
-			USE_GLES=1 NO_ASM=1 \
+			USE_GLES=1 \
+			NO_ASM=1 \
 			ZLIB_CFLAGS="-s USE_ZLIB=1" \
 			PKG_CONFIG="" \
 			LIBPNG_CFLAGS="-s USE_LIBPNG=1" \
@@ -344,16 +344,7 @@ $(BIN_DIR)/$(TARGET_HTML): $(INDEX_TEMPLATE) $(PLUGINS) $(INPUT_FILES)
 			GL_CFLAGS="" \
 			GLU_CFLAGS="" \
 			V=1 \
-			OPTFLAGS="$(OPT_FLAGS) -s MAIN_MODULE=1 \
-			--preload-file $(BIN_DIR)/plugins@plugins \
-			--preload-file $(BIN_DIR)/data@data  \
-			--shell-file $(INDEX_TEMPLATE) \
-			-s TOTAL_MEMORY=$(MEMORY) \
-			-s USE_ZLIB=1 \
-			-s USE_SDL=2 \
-			-s USE_LIBPNG=1 \
-			-s FULL_ES2=1 \
-			-DEMSCRIPTEN=1 -DINPUT_ROM=$(DEFAULT_ROM) $(EMRUN)" \
+			OPTFLAGS="$(OPT_FLAGS) -s MAIN_MODULE=1 -s EXPORT_ALL=1 -lidbfs.js --use-preload-plugins --preload-file $(BIN_DIR)/plugins@plugins --preload-file $(BIN_DIR)/data@data --shell-file $(INDEX_TEMPLATE) -s TOTAL_MEMORY=$(MEMORY) -s \"EXPORTED_FUNCTIONS=['_startEmulator', '_main']\" -s USE_ZLIB=1 -s USE_SDL=2 -s USE_LIBPNG=1 -s FULL_ES2=1 -DEMSCRIPTEN=1 -DINPUT_ROM=$(DEFAULT_ROM) $(EMRUN)" \
 			all
 
 core: $(CORE_DIR)/$(CORE_LIB)
@@ -375,7 +366,7 @@ $(CORE_DIR)/$(CORE_LIB) :
 		GL_CFLAGS="" \
 		GLU_CFLAGS="" \
 		V=1 \
-		OPTFLAGS="$(OPT_FLAGS) -s SIDE_MODULE=1 -DONSCREEN_FPS=1" \
+		OPTFLAGS="$(OPT_FLAGS) -s SIDE_MODULE=1 -DONSCREEN_FPS=1 -s USE_SDL=2 -s TOTAL_MEMORY=$(MEMORY)" \
 		all
 
 
@@ -405,7 +396,7 @@ $(AUDIO_DIR)/$(AUDIO_LIB) :
 
 glide: $(VIDEO_DIR)/$(VIDEO_LIB)
 
-$(VIDEO_DIR)/$(VIDEO_LIB) : $(BOOST_FILESYSTEM_LIB)
+$(VIDEO_DIR)/$(VIDEO_LIB):
 	cd $(VIDEO_DIR) && \
 	emmake make \
 		POSTFIX=-web \
@@ -421,13 +412,13 @@ $(VIDEO_DIR)/$(VIDEO_LIB) : $(BOOST_FILESYSTEM_LIB)
 		GL_CFLAGS="" \
 		GLU_CFLAGS="" \
 		V=1 \
-		LOADLIBES="../../../boost_1_59_0/stage/lib/libboost_filesystem.a ../../../boost_1_59_0/stage/lib/libboost_system.a" \
-		OPTFLAGS="$(OPT_FLAGS) -s SIDE_MODULE=1 -I../../../boost_1_59_0 \ -s FULL_ES2=1 -DNO_FILTER_THREAD=1" \
+		LOADLIBES="" \
+		OPTFLAGS="$(OPT_FLAGS) -s SIDE_MODULE=1 -s FULL_ES2=1 -DNO_FILTER_THREAD=1 -s USE_BOOST_HEADERS=1" \
 		all
 
 input: $(INPUT_DIR)/$(INPUT_LIB)
 
-$(INPUT_DIR)/$(INPUT_LIB) : $(BOOST_FILESYSTEM_LIB)
+$(INPUT_DIR)/$(INPUT_LIB):
 	cd $(INPUT_DIR) && \
 	emmake make \
 		POSTFIX=-web \
@@ -443,7 +434,7 @@ $(INPUT_DIR)/$(INPUT_LIB) : $(BOOST_FILESYSTEM_LIB)
 		GL_CFLAGS="" \
 		GLU_CFLAGS="" \
 		V=1 \
-		OPTFLAGS="$(OPT_FLAGS) -s SIDE_MODULE=1 -I../../../boost_1_59_0 "\
+		OPTFLAGS="$(OPT_FLAGS) -s SIDE_MODULE=1 "\
 		all
 
 rsp: $(RSP_DIR)/$(RSP_LIB)
