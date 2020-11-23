@@ -19,7 +19,7 @@ TARGET_ROM = $(BIN_DIR)/roms/$(ROM)
 SOURCE_ROM = $(ROMS_DIR)/$(ROM)
 
 POSTFIX ?= -web
-SO_EXTENSION ?= .js
+SO_EXTENSION ?= .so
 
 UI ?= mupen64plus-ui-console
 UI_DIR = $(UI)/projects/unix
@@ -27,10 +27,12 @@ UI_DIR = $(UI)/projects/unix
 CORE ?= mupen64plus-core
 CORE_DIR = $(CORE)/projects/unix
 CORE_LIB = $(CORE)$(POSTFIX)$(SO_EXTENSION)
+CORE_LIB_JS = $(CORE)$(POSTFIX).wasm
 
 AUDIO ?= mupen64plus-audio-web
 AUDIO_DIR = $(AUDIO)/projects/unix/
 AUDIO_LIB = $(AUDIO).js
+AUDIO_LIB_JS = $(AUDIO).wasm
 
 NATIVE_AUDIO := mupen64plus-audio-sdl
 NATIVE_AUDIO_DIR = $(NATIVE_AUDIO)/projects/unix
@@ -38,19 +40,23 @@ NATIVE_AUDIO_LIB = $(NATIVE_AUDIO).so
 
 VIDEO ?= mupen64plus-video-glide64mk2
 VIDEO_DIR = $(VIDEO)/projects/unix
+VIDEO_LIB_JS = $(VIDEO)$(POSTFIX).wasm
 VIDEO_LIB = $(VIDEO)$(POSTFIX)$(SO_EXTENSION)
 
 RICE = mupen64plus-video-rice
 RICE_VIDEO_LIB = $(RICE)$(POSTFIX)$(SO_EXTENSION)
+RICE_VIDEO_LIB_JS = $(RICE)$(POSTFIX).wasm
 RICE_VIDEO_DIR = $(RICE)/projects/unix/
 
 INPUT ?= mupen64plus-input-sdl
 INPUT_DIR = $(INPUT)/projects/unix
 INPUT_LIB = $(INPUT)$(POSTFIX)$(SO_EXTENSION)
+INPUT_LIB_JS = $(INPUT)$(POSTFIX).wasm
 
 RSP ?= mupen64plus-rsp-hle
 RSP_DIR = $(RSP)/projects/unix
 RSP_LIB = $(RSP)$(POSTFIX)$(SO_EXTENSION)
+RSP_LIB_JS = $(RSP)$(POSTFIX).wasm
 
 TARGET ?= mupen64plus
 PLUGINS_DIR = $(BIN_DIR)/plugins
@@ -66,7 +72,6 @@ BOOST_FILESYSTEM_LIB = $(BOOST_LIB_DIR)/libboost_filesystem.a
 
 
 PLUGINS = $(PLUGINS_DIR)/$(CORE_LIB) \
-	$(PLUGINS_DIR)/$(VIDEO_LIB) \
 	$(PLUGINS_DIR)/$(INPUT_LIB) \
 	$(PLUGINS_DIR)/$(RSP_LIB) \
 	$(PLUGINS_DIR)/$(RICE_VIDEO_LIB)
@@ -230,31 +235,31 @@ OPT_FLAGS := $(OPT_LEVEL) \
 			-DEMSCRIPTEN=1 \
 			-DUSE_FRAMESKIPPER=1
 
-$(PLUGINS_DIR)/%.js : %/projects/unix/%.js
+$(PLUGINS_DIR)/%.so : %/projects/unix/%.wasm
 	cp "$<" "$@"
 
 # libmupen64plus.so.2 deviates from standard naming
-$(PLUGINS_DIR)/$(CORE_LIB) : $(CORE_DIR)/$(CORE_LIB)
+$(PLUGINS_DIR)/$(CORE_LIB) : $(CORE_DIR)/$(CORE_LIB_JS)
 	mkdir -p $(PLUGINS_DIR)
 	cp "$<" "$@"
 
-$(PLUGINS_DIR)/$(AUDIO_LIB) : $(AUDIO_DIR)/$(AUDIO_LIB)
+$(PLUGINS_DIR)/$(AUDIO_LIB) : $(AUDIO_DIR)/$(AUDIO_LIB_JS)
 	mkdir -p $(PLUGINS_DIR)
 	cp "$<" "$@"
 
-$(PLUGINS_DIR)/$(VIDEO_LIB) : $(VIDEO_DIR)/$(VIDEO_LIB)
+$(PLUGINS_DIR)/$(VIDEO_LIB) : $(VIDEO_DIR)/$(VIDEO_LIB_JS)
 	mkdir -p $(PLUGINS_DIR)
 	cp "$<" "$@"
 
-$(PLUGINS_DIR)/$(RICE_VIDEO_LIB) : $(RICE_VIDEO_DIR)/$(RICE_VIDEO_LIB)
+$(PLUGINS_DIR)/$(RICE_VIDEO_LIB) : $(RICE_VIDEO_DIR)/$(RICE_VIDEO_LIB_JS)
 	mkdir -p $(PLUGINS_DIR)
 	cp -f "$<" "$@"
 
-$(PLUGINS_DIR)/$(INPUT_LIB) : $(INPUT_DIR)/$(INPUT_LIB)
+$(PLUGINS_DIR)/$(INPUT_LIB) : $(INPUT_DIR)/$(INPUT_LIB_JS)
 	mkdir -p $(PLUGINS_DIR)
 	cp "$<" "$@"
 
-$(PLUGINS_DIR)/$(RSP_LIB) : $(RSP_DIR)/$(RSP_LIB)
+$(PLUGINS_DIR)/$(RSP_LIB) : $(RSP_DIR)/$(RSP_LIB_JS)
 	mkdir -p $(PLUGINS_DIR)
 	cp "$<" "$@"
 
@@ -270,9 +275,9 @@ $(BIN_DIR) :
 #$(BOOST_FILESYSTEM_LIB):
 #	cd $(BOOST_DIR) && ./bootstrap.sh && ./b2 --test-config=user-config.jam toolset=emscripten link=static
 
-rice: $(RICE_VIDEO_DIR)/$(RICE_VIDEO_LIB)
+rice: $(RICE_VIDEO_DIR)/$(RICE_VIDEO_LIB_JS)
 
-$(RICE_VIDEO_DIR)/$(RICE_VIDEO_LIB):
+$(RICE_VIDEO_DIR)/$(RICE_VIDEO_LIB_JS):
 	cd $(RICE_VIDEO_DIR) && \
 			emmake $(MAKE) \
 			CROSS_COMPILE="" \
@@ -280,7 +285,7 @@ $(RICE_VIDEO_DIR)/$(RICE_VIDEO_LIB):
 			UNAME=Linux \
 			USE_FRAMESKIPPER=1 \
 			EMSCRIPTEN=1 \
-			SO_EXTENSION="js" \
+			SO_EXTENSION="wasm" \
 			USE_GLES=1 NO_ASM=1 \
 			ZLIB_CFLAGS="-s USE_ZLIB=1" \
 			PKG_CONFIG="" \
@@ -344,20 +349,22 @@ $(BIN_DIR)/$(TARGET_HTML): $(INDEX_TEMPLATE) $(PLUGINS) $(INPUT_FILES)
 			GL_CFLAGS="" \
 			GLU_CFLAGS="" \
 			V=1 \
-			OPTFLAGS="$(OPT_FLAGS) -s MAIN_MODULE=1 -s EXPORT_ALL=1 -lidbfs.js --use-preload-plugins --preload-file $(BIN_DIR)/plugins@plugins --preload-file $(BIN_DIR)/data@data --shell-file $(INDEX_TEMPLATE) -s TOTAL_MEMORY=$(MEMORY) -s \"EXPORTED_FUNCTIONS=['_startEmulator', '_main']\" -s USE_ZLIB=1 -s USE_SDL=2 -s USE_LIBPNG=1 -s FULL_ES2=1 -DEMSCRIPTEN=1 -DINPUT_ROM=$(DEFAULT_ROM) $(EMRUN)" \
+			OPTFLAGS="$(OPT_FLAGS) -s MAIN_MODULE=1 --use-preload-plugins -s EXPORT_ALL=1 -lidbfs.js --preload-file $(BIN_DIR)/plugins@plugins --preload-file $(BIN_DIR)/data@data --shell-file $(INDEX_TEMPLATE) -s TOTAL_MEMORY=$(MEMORY) -s \"EXPORTED_FUNCTIONS=['_startEmulator', '_main']\" -s USE_ZLIB=1 -s USE_SDL=2 -s USE_LIBPNG=1 -s FULL_ES2=1 -DEMSCRIPTEN=1 -DINPUT_ROM=$(DEFAULT_ROM) $(EMRUN)" \
 			all
 
 core: $(CORE_DIR)/$(CORE_LIB)
 
-$(CORE_DIR)/$(CORE_LIB) :
+$(CORE_DIR)/$(CORE_LIB_JS) :
 	cd $(CORE_DIR) && \
 	emmake make \
 		POSTFIX=-web \
 		UNAME=Linux \
 		EMSCRIPTEN=1 \
-		TARGET="$(CORE_LIB)" \
+		TARGET="$(CORE_LIB_JS)" \
 		SONAME="" \
-		USE_GLES=1 NO_ASM=1 \
+		SO_EXTENSION="wasm" \
+		USE_GLES=1 \
+		NO_ASM=1 \
 		ZLIB_CFLAGS="-s USE_ZLIB=1" \
 		PKG_CONFIG="" \
 		LIBPNG_CFLAGS="-s USE_LIBPNG=1" \
@@ -370,9 +377,10 @@ $(CORE_DIR)/$(CORE_LIB) :
 		all
 
 
+
 audio: $(AUDIO_DIR)/$(AUDIO_LIB)
 
-$(AUDIO_DIR)/$(AUDIO_LIB) :
+$(AUDIO_DIR)/$(AUDIO_LIB_JS) :
 	cd $(AUDIO_DIR) && \
 		emmake make \
 		POSTFIX=-web \
@@ -381,7 +389,7 @@ $(AUDIO_DIR)/$(AUDIO_LIB) :
 		NO_SRC=1 \
 		NO_SPEEX=1 \
 		NO_OSS=1 \
-		SO_EXTENSION="js" \
+		SO_EXTENSION="wasm" \
 		USE_GLES=1 NO_ASM=1 \
 		ZLIB_CFLAGS="-s USE_ZLIB=1" \
 		PKG_CONFIG="" \
@@ -396,13 +404,13 @@ $(AUDIO_DIR)/$(AUDIO_LIB) :
 
 glide: $(VIDEO_DIR)/$(VIDEO_LIB)
 
-$(VIDEO_DIR)/$(VIDEO_LIB):
+$(VIDEO_DIR)/$(VIDEO_LIB_JS):
 	cd $(VIDEO_DIR) && \
 	emmake make \
 		POSTFIX=-web \
 		USE_FRAMESKIPPER=1 \
 		EMSCRIPTEN=1 \
-		SO_EXTENSION="js" \
+		SO_EXTENSION="wasm" \
 		USE_GLES=1 NO_ASM=1 \
 		ZLIB_CFLAGS="-s USE_ZLIB=1" \
 		PKG_CONFIG="" \
@@ -418,13 +426,13 @@ $(VIDEO_DIR)/$(VIDEO_LIB):
 
 input: $(INPUT_DIR)/$(INPUT_LIB)
 
-$(INPUT_DIR)/$(INPUT_LIB):
+$(INPUT_DIR)/$(INPUT_LIB_JS):
 	cd $(INPUT_DIR) && \
 	emmake make \
 		POSTFIX=-web \
 		UNAME="Linux" \
 		EMSCRIPTEN=1 \
-		SO_EXTENSION="js" \
+		SO_EXTENSION="wasm" \
 		USE_GLES=1 NO_ASM=1 \
 		ZLIB_CFLAGS="-s USE_ZLIB=1" \
 		PKG_CONFIG="" \
@@ -439,13 +447,13 @@ $(INPUT_DIR)/$(INPUT_LIB):
 
 rsp: $(RSP_DIR)/$(RSP_LIB)
 
-$(RSP_DIR)/$(RSP_LIB) :
+$(RSP_DIR)/$(RSP_LIB_JS) :
 	cd $(RSP_DIR)&& \
 	emmake make \
 		POSTFIX=-web \
 		UNAME=Linux \
 		EMSCRIPTEN=1 \
-		SO_EXTENSION="js" \
+		SO_EXTENSION="wasm" \
 		USE_GLES=1 NO_ASM=1 NO_OSS=1 NO_SRC=1 NO_SPEEX=1\
 		ZLIB_CFLAGS="-s USE_ZLIB=1" \
 		PKG_CONFIG="" \
@@ -462,14 +470,20 @@ $(RSP_DIR)/$(RSP_LIB) :
 clean-web:
 	rm -fr $(BIN_DIR)
 	rm -f $(CORE_DIR)/$(CORE_LIB)
+	rm -f $(CORE_DIR)/$(CORE_LIB_JS)
 	rm -fr $(CORE_DIR)/_obj$(POSTFIX)
 	rm -f $(AUDIO_DIR)/$(AUDIO_LIB)
+	rm -f $(AUDIO_DIR)/$(AUDIO_LIB_JS)
 	rm -fr $(AUDIO_DIR)/_obj$(POSTFIX)
 	rm -f $(VIDEO_DIR)/$(VIDEO_LIB)
+	rm -f $(VIDEO_DIR)/$(VIDEO_LIB_JS)
 	rm -fr $(VIDEO_DIR)/_obj$(POSTFIX)
 	rm -f $(INPUT_DIR)/$(INPUT_LIB)
+	rm -f $(INPUT_DIR)/$(INPUT_LIB_JS)
 	rm -fr $(INPUT_DIR)/_obj$(POSTFIX)
 	rm -f $(RSP_DIR)/$(RSP_LIB)
+	rm -f $(RSP_DIR)/$(RSP_LIB_JS)
 	rm -fr $(RSP_DIR)/_obj$(POSTFIX)
 	rm -f $(RICE_VIDEO_DIR)/$(RICE_VIDEO_LIB)
+	rm -f $(RICE_VIDEO_DIR)/$(RICE_VIDEO_LIB_JS)
 	rm -fr $(RICE_VIDEO_DIR)/_obj$(POSTFIX)
