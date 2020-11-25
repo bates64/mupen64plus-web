@@ -425,7 +425,7 @@ EXPORT void CALL AiDacrateChanged( int SystemType )
             f = 48628316 / (*AudioInfo.AI_DACRATE_REG + 1);
             break;
     }
-    //testFunction1();
+
     InitializeAudio(f);
 }
 
@@ -444,11 +444,9 @@ EXPORT void CALL AiLenChanged( void )
     LenReg = *AudioInfo.AI_LEN_REG;
     p = AudioInfo.RDRAM + (*AudioInfo.AI_DRAM_ADDR_REG & 0xFFFFFF);
 
-		//Mario reports 44100Hz and sounds good with freq of 33600
-		// Evangaleon reports 22050Hz. and sounds 2x too fast at freq of 33600
+    // Mario reports 44100Hz and sounds good with freq of 33600
+    // Evangaleon reports 22050Hz. and sounds 2x too fast at freq of 33600
     
-
-    printf("AILenChanged\n");
     
     // We have a buffer pointer and number of samples
     // Just pass them to webaudio.

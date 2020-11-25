@@ -1,7 +1,6 @@
 mergeInto(LibraryManager.library, {
 
   createWebAudioContext: function(freq) {
-    console.log('initializeAudio JS');
     console.error('******** game required freq: ',freq);
     if(!Module.audio)
     {
@@ -28,7 +27,6 @@ mergeInto(LibraryManager.library, {
   updateWebAudioBuffer: function(pBuffer, bufferSize) {
     // We have a buffer pointer and number of samples
     // Just pass them to webaudio.
-    console.log('AILenChanged JS');
 
     if(!pBuffer || bufferSize < 1)
     {
