@@ -31,7 +31,7 @@ CORE_LIB_JS = $(CORE)$(POSTFIX).wasm
 
 AUDIO ?= mupen64plus-audio-web
 AUDIO_DIR = $(AUDIO)/projects/unix/
-AUDIO_LIB = $(AUDIO).js
+AUDIO_LIB = $(AUDIO).so
 AUDIO_LIB_JS = $(AUDIO).wasm
 
 NATIVE_AUDIO := mupen64plus-audio-sdl
@@ -72,6 +72,7 @@ BOOST_FILESYSTEM_LIB = $(BOOST_LIB_DIR)/libboost_filesystem.a
 
 
 PLUGINS = $(PLUGINS_DIR)/$(CORE_LIB) \
+	$(PLUGINS_DIR)/$(AUDIO_LIB) \
 	$(PLUGINS_DIR)/$(INPUT_LIB) \
 	$(PLUGINS_DIR)/$(RSP_LIB) \
 	$(PLUGINS_DIR)/$(RICE_VIDEO_LIB)
@@ -340,7 +341,6 @@ $(BIN_DIR)/$(TARGET_HTML): $(INDEX_TEMPLATE) $(PLUGINS) $(INPUT_FILES)
 			EMSCRIPTEN=1 \
 			EXEEXT=".html" \
 			USE_GLES=1 \
-			NO_ASM=1 \
 			ZLIB_CFLAGS="-s USE_ZLIB=1" \
 			PKG_CONFIG="" \
 			LIBPNG_CFLAGS="-s USE_LIBPNG=1" \
@@ -349,7 +349,7 @@ $(BIN_DIR)/$(TARGET_HTML): $(INDEX_TEMPLATE) $(PLUGINS) $(INPUT_FILES)
 			GL_CFLAGS="" \
 			GLU_CFLAGS="" \
 			V=1 \
-			OPTFLAGS="$(OPT_FLAGS) -s MAIN_MODULE=1 --use-preload-plugins -s EXPORT_ALL=1 -lidbfs.js --preload-file $(BIN_DIR)/plugins@plugins --preload-file $(BIN_DIR)/data@data --shell-file $(INDEX_TEMPLATE) -s TOTAL_MEMORY=$(MEMORY) -s \"EXPORTED_FUNCTIONS=['_startEmulator', '_main']\" -s USE_ZLIB=1 -s USE_SDL=2 -s USE_LIBPNG=1 -s FULL_ES2=1 -DEMSCRIPTEN=1 -DINPUT_ROM=$(DEFAULT_ROM) $(EMRUN)" \
+			OPTFLAGS="$(OPT_FLAGS) -s MAIN_MODULE=1 --use-preload-plugins -s EXPORT_ALL=1 -lidbfs.js --preload-file $(BIN_DIR)/plugins@plugins --preload-file $(BIN_DIR)/data@data --shell-file $(INDEX_TEMPLATE) --js-library ../../../mupen64plus-audio-web/src/jslib/audiolib.js -s TOTAL_MEMORY=$(MEMORY) -s \"EXPORTED_FUNCTIONS=['_startEmulator', '_main']\" -s USE_ZLIB=1 -s USE_SDL=2 -s USE_LIBPNG=1 -s FULL_ES2=1 -DEMSCRIPTEN=1 -DINPUT_ROM=$(DEFAULT_ROM) $(EMRUN)" \
 			all
 
 core: $(CORE_DIR)/$(CORE_LIB)
@@ -390,7 +390,7 @@ $(AUDIO_DIR)/$(AUDIO_LIB_JS) :
 		NO_SPEEX=1 \
 		NO_OSS=1 \
 		SO_EXTENSION="wasm" \
-		USE_GLES=1 NO_ASM=1 \
+		USE_GLES=1 \
 		ZLIB_CFLAGS="-s USE_ZLIB=1" \
 		PKG_CONFIG="" \
 		LIBPNG_CFLAGS="-s USE_LIBPNG=1" \
@@ -399,7 +399,7 @@ $(AUDIO_DIR)/$(AUDIO_LIB_JS) :
 		GL_CFLAGS="" \
 		GLU_CFLAGS="" \
 		V=1 \
-		OPTFLAGS="$(OPT_FLAGS) -s SIDE_MODULE=1 -DNO_FILTER_THREAD=1"\
+		OPTFLAGS="$(OPT_FLAGS) -s SIDE_MODULE=1 -s EXPORT_ALL=1 -DNO_FILTER_THREAD=1 --js-library ../../src/jslib"\
 		all
 
 glide: $(VIDEO_DIR)/$(VIDEO_LIB)
@@ -411,7 +411,8 @@ $(VIDEO_DIR)/$(VIDEO_LIB_JS):
 		USE_FRAMESKIPPER=1 \
 		EMSCRIPTEN=1 \
 		SO_EXTENSION="wasm" \
-		USE_GLES=1 NO_ASM=1 \
+		USE_GLES=1 \
+		NO_ASM=1 \
 		ZLIB_CFLAGS="-s USE_ZLIB=1" \
 		PKG_CONFIG="" \
 		LIBPNG_CFLAGS="-s USE_LIBPNG=1" \
