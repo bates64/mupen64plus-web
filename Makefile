@@ -334,7 +334,7 @@ $(BIN_DIR)/$(TARGET_HTML): $(INDEX_TEMPLATE) $(PLUGINS) $(INPUT_FILES)
 	rm -f $@
 	# building UI (program entry point)
 	cd $(UI_DIR) && \
-			EMCC_FORCE_STDLIBS=1 emmake make \
+		emmake make \
 			POSTFIX=-web \
 			TARGET=$(BIN_DIR)/$(TARGET_HTML) \
 			UNAME=Linux \
