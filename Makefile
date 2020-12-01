@@ -68,10 +68,6 @@ PRE_JS = $(abspath $(SCRIPTS_DIR)/prefix.js)
 POST_JS = $(abspath $(SCRIPTS_DIR)/postfix.js)
 MODULE_JS = module.js
 
-BOOST_DIR := ./boost_1_74_0
-BOOST_LIB_DIR = $(abspath $(BOOST_DIR)/stage/lib)
-BOOST_FILESYSTEM_LIB = $(BOOST_LIB_DIR)/libboost_filesystem.a
-
 
 PLUGINS = $(PLUGINS_DIR)/$(CORE_LIB) \
 	$(PLUGINS_DIR)/$(AUDIO_LIB) \
@@ -394,9 +390,6 @@ $(BIN_DIR) :
 	#Creating output directory
 	mkdir -p $(BIN_DIR)
 
-#$(BOOST_FILESYSTEM_LIB):
-#	cd $(BOOST_DIR) && ./bootstrap.sh && ./b2 --test-config=user-config.jam toolset=emscripten link=static
-
 rice: $(RICE_VIDEO_DIR)/$(RICE_VIDEO_LIB_JS)
 
 $(RICE_VIDEO_DIR)/$(RICE_VIDEO_LIB_JS):
@@ -471,7 +464,7 @@ $(BIN_DIR)/$(TARGET_HTML): $(INDEX_TEMPLATE) $(PLUGINS) $(INPUT_FILES)
 			GL_CFLAGS="" \
 			GLU_CFLAGS="" \
 			V=1 \
-			OPTFLAGS="$(OPT_FLAGS) -v -s MAIN_MODULE=1 --use-preload-plugins -lidbfs.js -s EXPORT_ALL=1 --preload-file $(BIN_DIR)/plugins@plugins --preload-file $(BIN_DIR)/data@data --shell-file $(INDEX_TEMPLATE) --js-library ../../../mupen64plus-audio-web/src/jslib/audiolib.js -s TOTAL_MEMORY=$(MEMORY) -s \"EXPORTED_FUNCTIONS=[$(EXPORTED_FUNCTIONS)]\" -s DEMANGLE_SUPPORT=1 -s MODULARIZE=1 -s EXPORT_NAME=\"createModule\" -s USE_ZLIB=1 -s USE_SDL=2 -s USE_LIBPNG=1 -s FULL_ES2=1 -DEMSCRIPTEN=1 -DINPUT_ROM=$(DEFAULT_ROM) $(EMRUN)" \
+			OPTFLAGS="$(OPT_FLAGS) -v -s MAIN_MODULE=1 --use-preload-plugins -lidbfs.js -s EXPORT_ALL=1 --preload-file $(BIN_DIR)/plugins@plugins --preload-file $(BIN_DIR)/data@data --shell-file $(INDEX_TEMPLATE) --js-library ../../../mupen64plus-audio-web/src/jslib/audiolib.js -s TOTAL_MEMORY=$(MEMORY) -s \"EXPORTED_FUNCTIONS=[$(EXPORTED_FUNCTIONS)]\" -s DEMANGLE_SUPPORT=1 -s MODULARIZE=1 -s EXPORT_NAME=\"createModule\" -s EXPORT_ES6=0 -s USE_ZLIB=1 -s USE_SDL=2 -s USE_LIBPNG=1 -s FULL_ES2=1 -DEMSCRIPTEN=1 -DINPUT_ROM=$(DEFAULT_ROM) $(EMRUN)" \
 			all
 
 core: $(CORE_DIR)/$(CORE_LIB)
