@@ -1,21 +1,24 @@
-[submodule "mupen64plus-core"]
-	path = mupen64plus-core
-	url = git@github.com:johnoneil/mupen64plus-core.git
-[submodule "mupen64plus-ui-console"]
-	path = mupen64plus-ui-console
-	url = git@github.com:johnoneil/mupen64plus-ui-console.git
+[submodule "mupen64plus-core-web-netplay"]
+	path = mupen64plus-core-web-netplay
+	url = git@github.com:cheinr/mupen64plus-core-web-netplay.git
 [submodule "mupen64plus-video-glide64mk2"]
 	path = mupen64plus-video-glide64mk2
 	url = git@github.com:johnoneil/mupen64plus-video-glide64mk2.git
 [submodule "mupen64plus-rsp-hle"]
 	path = mupen64plus-rsp-hle
 	url = git@github.com:johnoneil/mupen64plus-rsp-hle.git
-[submodule "mupen64plus-input-sdl"]
-	path = mupen64plus-input-sdl
-	url = git@github.com:johnoneil/mupen64plus-input-sdl.git
 [submodule "mupen64plus-audio-sdl"]
 	path = mupen64plus-audio-sdl
 	url = git@github.com:johnoneil/mupen64plus-audio-sdl.git
-[submodule "mupen64plus-video-rice"]
-	path = mupen64plus-video-rice
-	url = git@github.com:johnoneil/mupen64plus-video-rice.git
+[submodule "mupen64plus-input-sdl-web-netplay"]
+	path = mupen64plus-input-sdl-web-netplay
+	url = git@github.com:cheinr/mupen64plus-input-sdl-web-netplay.git
+[submodule "mupen64plus-ui-console-web-netplay"]
+	path = mupen64plus-ui-console-web-netplay
+	url = git@github.com:cheinr/mupen64plus-ui-console-web-netplay.git
+[submodule "mupen64plus-input-sdl"]
+	path = mupen64plus-input-sdl
+	url = git@github.com:johnoneil/mupen64plus-input-sdl.git
+[submodule "mupen64plus-video-rice-web-netplay"]
+	path = mupen64plus-video-rice-web-netplay
+	url = git@github.com:cheinr/mupen64plus-video-rice-web-netplay.git

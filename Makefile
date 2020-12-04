@@ -21,10 +21,10 @@ SOURCE_ROM = $(ROMS_DIR)/$(ROM)
 POSTFIX ?= -web
 SO_EXTENSION ?= .so
 
-UI ?= mupen64plus-ui-console
+UI ?= mupen64plus-ui-console-web-netplay
 UI_DIR = $(UI)/projects/unix
 
-CORE ?= mupen64plus-core
+CORE ?= mupen64plus-core-web-netplay
 CORE_DIR = $(CORE)/projects/unix
 CORE_LIB = $(CORE)$(POSTFIX)$(SO_EXTENSION)
 CORE_LIB_JS = $(CORE)$(POSTFIX).wasm
@@ -43,7 +43,7 @@ VIDEO_DIR = $(VIDEO)/projects/unix
 VIDEO_LIB_JS = $(VIDEO)$(POSTFIX).wasm
 VIDEO_LIB = $(VIDEO)$(POSTFIX)$(SO_EXTENSION)
 
-RICE = mupen64plus-video-rice
+RICE = mupen64plus-video-rice-web-netplay
 RICE_VIDEO_LIB = $(RICE)$(POSTFIX)$(SO_EXTENSION)
 RICE_VIDEO_LIB_JS = $(RICE)$(POSTFIX).wasm
 RICE_VIDEO_DIR = $(RICE)/projects/unix/
@@ -278,7 +278,7 @@ run-web: web
 run: run-web
 
 clean-native:
-	cd mupen64plus-ui-console/projects/unix && $(MAKE) clean
+	cd mupen64plus-ui-console-web-netplay/projects/unix && $(MAKE) clean
 	cd $(CORE_DIR) && $(MAKE) clean
 	cd $(INPUT_DIR) && $(MAKE) clean
 	cd $(RSP_DIR) && $(MAKE) clean
@@ -293,11 +293,11 @@ rebuild: clean all
 $(NATIVE_BIN):
 	mkdir $(NATIVE_BIN)
 
-$(NATIVE_EXE): $(NATIVE_BIN) mupen64plus-ui-console/projects/unix/mupen64plus
-	cp mupen64plus-ui-console/projects/unix/mupen64plus $@
+$(NATIVE_EXE): $(NATIVE_BIN) mupen64plus-ui-console-web-netplay/projects/unix/mupen64plus
+	cp mupen64plus-ui-console-web-netplay/projects/unix/mupen64plus $@
 
-mupen64plus-ui-console/projects/unix/mupen64plus:
-	cd mupen64plus-ui-console/projects/unix && $(MAKE) all
+mupen64plus-ui-console-web-netplay/projects/unix/mupen64plus:
+	cd mupen64plus-ui-console-web-netplay/projects/unix && $(MAKE) all
 
 $(NATIVE_BIN)/libmupen64plus.so.2: $(NATIVE_BIN) $(CORE_DIR)/libmupen64plus.so.2.0.0
 	cp $(CORE_DIR)/libmupen64plus.so.2.0.0 $@
