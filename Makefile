@@ -245,7 +245,7 @@ web: .FORCE
 
 RICE_CFG_DIR := cfg/rice
 GLIDE_CFG_DIR := cfg/glide
-DATA_DIR := mupen64plus-core/data
+DATA_DIR := mupen64plus-core-web-data/data
 
 CFG_DIR := $(GLIDE_CFG_DIR)
 ifndef rice
