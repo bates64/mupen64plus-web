@@ -80,6 +80,7 @@ INPUT_FILES = \
 	$(BIN_DIR)/data/Glide64mk2.ini \
 	$(BIN_DIR)/data/RiceVideoLinux.ini \
 	$(BIN_DIR)/stats.min.js \
+	$(BIN_DIR)/main.js \
 	$(BIN_DIR)/data/mupencheat.txt \
 	$(INDEX_TEMPLATE) \
 	$(BIN_DIR)/$(MODULE_JS) \
@@ -342,14 +343,14 @@ DEBUG_LEVEL = -g2 -s ASSERTIONS=1
 
 else
 
-OPT_LEVEL = -O0 #-s AGGRESSIVE_VARIABLE_ELIMINATION=1
+OPT_LEVEL = -O3 #-s AGGRESSIVE_VARIABLE_ELIMINATION=1
 
 endif
 
 
 OPT_FLAGS := $(OPT_LEVEL) \
 			$(DEBUG_LEVEL) \
-			-s 'EXTRA_EXPORTED_RUNTIME_METHODS=[\"ccall\", \"cwrap\", \"getValue\"]' \
+			-s 'EXTRA_EXPORTED_RUNTIME_METHODS=[\"ccall\", \"cwrap\", \"getValue\", \"FS\"]' \
 			-DEMSCRIPTEN=1 \
 			-DUSE_FRAMESKIPPER=1
 
@@ -435,6 +436,9 @@ $(BIN_DIR)/$(MODULE_JS): $(SCRIPTS_DIR)/$(MODULE_JS)
 $(BIN_DIR)/stats.min.js: $(SCRIPTS_DIR)/stats.min.js
 	cp $< $@
 
+$(BIN_DIR)/main.js: $(SCRIPTS_DIR)/main.js
+	cp $< $@
+
 $(BIN_DIR)/data/mupen64plus.cfg: $(CFG_DIR)/mupen64plus-web.cfg
 	cp $< $@
 
@@ -464,7 +468,7 @@ $(BIN_DIR)/$(TARGET_HTML): $(INDEX_TEMPLATE) $(PLUGINS) $(INPUT_FILES)
 			GL_CFLAGS="" \
 			GLU_CFLAGS="" \
 			V=1 \
-			OPTFLAGS="$(OPT_FLAGS) -v -s MAIN_MODULE=1 --use-preload-plugins -lidbfs.js -s EXPORT_ALL=1 --preload-file $(BIN_DIR)/plugins@plugins --preload-file $(BIN_DIR)/data@data --shell-file $(INDEX_TEMPLATE) --js-library ../../../mupen64plus-audio-web/src/jslib/audiolib.js -s TOTAL_MEMORY=$(MEMORY) -s \"EXPORTED_FUNCTIONS=[$(EXPORTED_FUNCTIONS)]\" -s DEMANGLE_SUPPORT=1 -s MODULARIZE=1 -s EXPORT_NAME=\"createModule\" -s EXPORT_ES6=0 -s USE_ZLIB=1 -s USE_SDL=2 -s USE_LIBPNG=1 -s FULL_ES2=1 -DEMSCRIPTEN=1 -DINPUT_ROM=$(DEFAULT_ROM) $(EMRUN)" \
+			OPTFLAGS="$(OPT_FLAGS) -v -s MAIN_MODULE=1 --use-preload-plugins -lidbfs.js -s EXPORT_ALL=1 --preload-file $(BIN_DIR)/plugins@plugins --preload-file $(BIN_DIR)/data@data --shell-file $(INDEX_TEMPLATE) --js-library ../../../mupen64plus-audio-web/src/jslib/audiolib.js -s TOTAL_MEMORY=$(MEMORY) -s \"EXPORTED_FUNCTIONS=[$(EXPORTED_FUNCTIONS)]\" -s DEMANGLE_SUPPORT=1 -s MODULARIZE=1 -s EXPORT_NAME=\"createModule\" -s ENVIRONMENT='web' -s EXPORT_ES6=0 -s USE_ZLIB=1 -s USE_SDL=2 -s USE_LIBPNG=1 -s FULL_ES2=1 -DEMSCRIPTEN=1 --pre-js $(PRE_JS) --post-js $(POST_JS) -DINPUT_ROM=$(DEFAULT_ROM) $(EMRUN)" \
 			all
 
 core: $(CORE_DIR)/$(CORE_LIB)
@@ -585,6 +589,7 @@ $(RSP_DIR)/$(RSP_LIB_JS) :
 clean-ui:
 	rm -rf $(UI_DIR)/_obj$(POSTFIX)
 	rm -f $(BIN_DIR)/index.*
+	rm -f $(BIN_DIR)/main.js
 
 clean-web:
 	rm -fr $(BIN_DIR)
