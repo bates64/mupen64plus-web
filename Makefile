@@ -210,7 +210,8 @@ OPT_LEVEL ?= -O2
 DEBUG_LEVEL ?=
 
 #MEMORY = 524288
-MEMORY = 402653184
+#MEMORY =  402653184
+MEMORY =  655360000
 #MEMORY = 268435456
 #MEMORY = 134217728
 
@@ -468,7 +469,7 @@ $(BIN_DIR)/$(TARGET_HTML): $(INDEX_TEMPLATE) $(PLUGINS) $(INPUT_FILES)
 			GL_CFLAGS="" \
 			GLU_CFLAGS="" \
 			V=1 \
-			OPTFLAGS="$(OPT_FLAGS) -v -s MAIN_MODULE=1 --use-preload-plugins -lidbfs.js -s EXPORT_ALL=1 --preload-file $(BIN_DIR)/plugins@plugins --preload-file $(BIN_DIR)/data@data --shell-file $(INDEX_TEMPLATE) --js-library ../../../mupen64plus-audio-web/src/jslib/audiolib.js -s TOTAL_MEMORY=$(MEMORY) -s \"EXPORTED_FUNCTIONS=[$(EXPORTED_FUNCTIONS)]\" -s DEMANGLE_SUPPORT=1 -s MODULARIZE=1 -s EXPORT_NAME=\"createModule\" -s ENVIRONMENT='web' -s EXPORT_ES6=0 -s USE_ZLIB=1 -s USE_SDL=2 -s USE_LIBPNG=1 -s FULL_ES2=1 -DEMSCRIPTEN=1 --pre-js $(PRE_JS) --post-js $(POST_JS) -DINPUT_ROM=$(DEFAULT_ROM) $(EMRUN)" \
+			OPTFLAGS="$(OPT_FLAGS) -v -s MAIN_MODULE=1 --use-preload-plugins -lidbfs.js -s EXPORT_ALL=1 --preload-file $(BIN_DIR)/plugins@plugins --preload-file $(BIN_DIR)/data@data --shell-file $(INDEX_TEMPLATE) --js-library ../../../mupen64plus-audio-web/src/jslib/audiolib.js -s TOTAL_MEMORY=$(MEMORY) -s \"EXPORTED_FUNCTIONS=[$(EXPORTED_FUNCTIONS)]\" -s DEMANGLE_SUPPORT=1 -s MODULARIZE=1 -s EXPORT_NAME=\"createModule\" -s ALLOW_MEMORY_GROWTH=1 -s ENVIRONMENT='web' -s EXPORT_ES6=0 -s NO_EXIT_RUNTIME=1 -s USE_ZLIB=1 -s USE_SDL=2 -s USE_LIBPNG=1 -s FULL_ES2=1 -DEMSCRIPTEN=1 --pre-js $(PRE_JS) --post-js $(POST_JS) -DINPUT_ROM=$(DEFAULT_ROM) $(EMRUN)" \
 			all
 
 core: $(CORE_DIR)/$(CORE_LIB)
