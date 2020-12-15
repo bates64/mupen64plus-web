@@ -29,10 +29,12 @@ CORE_DIR = $(CORE)/projects/unix
 CORE_LIB = $(CORE)$(POSTFIX)$(SO_EXTENSION)
 CORE_LIB_JS = $(CORE)$(POSTFIX).wasm
 
-AUDIO ?= mupen64plus-audio-web
+LIBSRC_DIR = deps/libsamplerate
+AUDIO ?= mupen64plus-audio-sdl
 AUDIO_DIR = $(AUDIO)/projects/unix/
 AUDIO_LIB = $(AUDIO).so
-AUDIO_LIB_JS = $(AUDIO).wasm
+AUDIO_LIB_JS = $(AUDIO)-web.wasm
+
 
 NATIVE_AUDIO := mupen64plus-audio-sdl
 NATIVE_AUDIO_DIR = $(NATIVE_AUDIO)/projects/unix
@@ -44,7 +46,7 @@ VIDEO_LIB_JS = $(VIDEO)$(POSTFIX).wasm
 VIDEO_LIB = $(VIDEO)$(POSTFIX)$(SO_EXTENSION)
 
 RICE = mupen64plus-video-rice-web-netplay
-RICE_VIDEO_LIB = $(RICE)$(POSTFIX)$(SO_EXTENSION)
+RICE_VIDEO_LIB = $(RICE)-web$(POSTFIX)$(SO_EXTENSION)
 RICE_VIDEO_LIB_JS = $(RICE)$(POSTFIX).wasm
 RICE_VIDEO_DIR = $(RICE)/projects/unix/
 
@@ -211,7 +213,8 @@ DEBUG_LEVEL ?=
 
 #MEMORY = 524288
 #MEMORY =  402653184
-MEMORY =  655360000
+#MEMORY =  655360000
+MEMORY =   1310720000
 #MEMORY = 268435456
 #MEMORY = 134217728
 
@@ -220,8 +223,7 @@ NATIVE_PLUGINS := \
 		$(NATIVE_BIN)/libmupen64plus.so.2 \
 		$(NATIVE_BIN)/mupen64plus-input-sdl.so \
 		$(NATIVE_BIN)/mupen64plus-rsp-hle.so \
-		$(NATIVE_BIN)/mupen64plus-video-glide64mk2.so \
-		$(NATIVE_BIN)/mupen64plus-video-rice.so \
+		$(NATIVE_BIN)/mupen64plus-video-rice-web-netplay.so \
 		$(NATIVE_BIN)/mupen64plus-audio-sdl.so \
 
 NATIVE_EXE := $(NATIVE_BIN)/mupen64plus
@@ -253,6 +255,8 @@ ifndef rice
 	CFG_DIR := $(RICE_CFG_DIR)
 endif
 
+CFG_DIR := $(RICE_CFG_DIR)
+
 NATIVE_ARGS ?=
 
 run-native: native
@@ -270,7 +274,7 @@ BROWSER ?= firefox
 ifeq ($(browser), chromium)
 		BROWSER := $(shell which chromium-browser)
 endif
-EMRUN ?= --emrun
+EMRUN ?= #--emrun
 
 FORWARDSLASH ?= %2F
 run-web: web
@@ -324,11 +328,11 @@ $(VIDEO_DIR)/mupen64plus-video-glide64mk2.so:
 $(NATIVE_BIN)/mupen64plus-video-glide64mk2.so: $(NATIVE_BIN) $(VIDEO_DIR)/mupen64plus-video-glide64mk2.so
 	cp $(VIDEO_DIR)/mupen64plus-video-glide64mk2.so $@
 
-$(RICE_VIDEO_DIR)/mupen64plus-video-rice.so:
+$(RICE_VIDEO_DIR)/mupen64plus-video-rice-web-netplay.so:
 	cd $(RICE_VIDEO_DIR) && $(MAKE) all
 
-$(NATIVE_BIN)/mupen64plus-video-rice.so: $(NATIVE_BIN) $(RICE_VIDEO_DIR)/mupen64plus-video-rice.so
-	cp $(RICE_VIDEO_DIR)/mupen64plus-video-rice.so $@
+$(NATIVE_BIN)/mupen64plus-video-rice-web-netplay.so: $(NATIVE_BIN) $(RICE_VIDEO_DIR)/mupen64plus-video-rice-web-netplay.so
+	cp $(RICE_VIDEO_DIR)/mupen64plus-video-rice-web-netplay.so $@
 
 $(NATIVE_AUDIO_DIR)/mupen64plus-audio-sdl.so:
 	cd $(NATIVE_AUDIO_DIR) && $(MAKE) all
@@ -340,7 +344,7 @@ $(NATIVE_BIN)/mupen64plus-audio-sdl.so: $(NATIVE_BIN) $(NATIVE_AUDIO_DIR)/mupen6
 ifeq ($(config), debug)
 
 OPT_LEVEL = -O0
-DEBUG_LEVEL = -g2 -s ASSERTIONS=1
+DEBUG_LEVEL = -g2
 
 else
 
@@ -469,7 +473,7 @@ $(BIN_DIR)/$(TARGET_HTML): $(INDEX_TEMPLATE) $(PLUGINS) $(INPUT_FILES)
 			GL_CFLAGS="" \
 			GLU_CFLAGS="" \
 			V=1 \
-			OPTFLAGS="$(OPT_FLAGS) -v -s MAIN_MODULE=1 --use-preload-plugins -lidbfs.js -s EXPORT_ALL=1 --preload-file $(BIN_DIR)/plugins@plugins --preload-file $(BIN_DIR)/data@data --shell-file $(INDEX_TEMPLATE) --js-library ../../../mupen64plus-audio-web/src/jslib/audiolib.js -s TOTAL_MEMORY=$(MEMORY) -s \"EXPORTED_FUNCTIONS=[$(EXPORTED_FUNCTIONS)]\" -s DEMANGLE_SUPPORT=1 -s MODULARIZE=1 -s EXPORT_NAME=\"createModule\" -s ALLOW_MEMORY_GROWTH=1 -s ENVIRONMENT='web' -s EXPORT_ES6=0 -s NO_EXIT_RUNTIME=1 -s USE_ZLIB=1 -s USE_SDL=2 -s USE_LIBPNG=1 -s FULL_ES2=1 -DEMSCRIPTEN=1 --pre-js $(PRE_JS) --post-js $(POST_JS) -DINPUT_ROM=$(DEFAULT_ROM) $(EMRUN)" \
+			OPTFLAGS="$(OPT_FLAGS) -v -s MAIN_MODULE=1 --use-preload-plugins -lidbfs.js -s EXPORT_ALL=1 --preload-file $(BIN_DIR)/plugins@plugins --preload-file $(BIN_DIR)/data@data --shell-file $(INDEX_TEMPLATE) --js-library ../../../mupen64plus-audio-web/src/jslib/audiolib.js -s INITIAL_MEMORY=$(MEMORY) -s \"EXPORTED_FUNCTIONS=[$(EXPORTED_FUNCTIONS)]\" -s DEMANGLE_SUPPORT=1 -s MODULARIZE=1 -s EXPORT_NAME=\"createModule\" -s ENVIRONMENT='web' -s EXPORT_ES6=0 -s NO_EXIT_RUNTIME=1 -s USE_ZLIB=1 -s USE_SDL=2 -s USE_LIBPNG=1 -s FULL_ES2=1 -DEMSCRIPTEN=1 --pre-js $(PRE_JS) --post-js $(POST_JS) -DINPUT_ROM=$(DEFAULT_ROM) $(EMRUN)" \
 			all
 
 core: $(CORE_DIR)/$(CORE_LIB)
@@ -493,21 +497,25 @@ $(CORE_DIR)/$(CORE_LIB_JS) :
 		GL_CFLAGS="" \
 		GLU_CFLAGS="" \
 		V=1 \
-		OPTFLAGS="$(OPT_FLAGS) -s SIDE_MODULE=1 -DONSCREEN_FPS=1 -s USE_SDL=2 -s TOTAL_MEMORY=$(MEMORY)" \
+		OPTFLAGS="$(OPT_FLAGS) -s SIDE_MODULE=1 -DONSCREEN_FPS=1 -s USE_SDL=2" \
 		all
 
 
+libsrc:
+	cd $(LIBSRC_DIR) && \
+	mkdir -p build && \
+	cd build && \
+	emcmake cmake .. && \
+	emmake make
 
 audio: $(AUDIO_DIR)/$(AUDIO_LIB)
 
-$(AUDIO_DIR)/$(AUDIO_LIB_JS) :
+$(AUDIO_DIR)/$(AUDIO_LIB_JS) : libsrc
 	cd $(AUDIO_DIR) && \
 		emmake make \
 		POSTFIX=-web \
 		UNAME="Linux" \
 		EMSCRIPTEN=1 \
-		NO_SRC=1 \
-		NO_SPEEX=1 \
 		NO_OSS=1 \
 		SO_EXTENSION="wasm" \
 		USE_GLES=1 \
@@ -519,7 +527,8 @@ $(AUDIO_DIR)/$(AUDIO_LIB_JS) :
 		GL_CFLAGS="" \
 		GLU_CFLAGS="" \
 		V=1 \
-		OPTFLAGS="$(OPT_FLAGS) -s SIDE_MODULE=1 -DNO_FILTER_THREAD=1 --js-library ../../src/jslib"\
+		SRC_LDLIBS="../../../$(LIBSRC_DIR)/build/src/libsamplerate.a" \
+		OPTFLAGS="$(OPT_FLAGS) -s SIDE_MODULE=1 -fPIC -DNO_FILTER_THREAD=1 -I../../../$(LIBSRC_DIR)/include --js-library ../../src/jslib"\
 		all
 
 glide: $(VIDEO_DIR)/$(VIDEO_LIB)
@@ -575,7 +584,7 @@ $(RSP_DIR)/$(RSP_LIB_JS) :
 		UNAME=Linux \
 		EMSCRIPTEN=1 \
 		SO_EXTENSION="wasm" \
-		USE_GLES=1 NO_ASM=1 NO_OSS=1 NO_SRC=1 NO_SPEEX=1\
+		USE_GLES=1 NO_ASM=1 NO_OSS=1 \
 		ZLIB_CFLAGS="-s USE_ZLIB=1" \
 		PKG_CONFIG="" \
 		LIBPNG_CFLAGS="-s USE_LIBPNG=1" \

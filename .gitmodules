@@ -22,3 +22,6 @@
 [submodule "mupen64plus-video-rice-web-netplay"]
 	path = mupen64plus-video-rice-web-netplay
 	url = git@github.com:cheinr/mupen64plus-video-rice-web-netplay.git
+[submodule "deps/libsamplerate"]
+	path = deps/libsamplerate
+	url = git@github.com:cheinr/libsamplerate.git
