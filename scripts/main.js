@@ -13,8 +13,12 @@ const createMupen64PlusWeb = function(extraModuleArgs) {
     throw "No canvas element provided for mupen64PlusWeb to use!";
   }
 
-  if (!m.romPath) {
+  if (!m.romData) {
     throw "No rom specified for emulation!";
+  }
+
+  if (!m.coreConfig.emuMode || m.coreConfig.emuMode < 0 || m.coreConfig.emuMode > 3) {
+    m.coreConfig.emuMode = 0;
   }
   
   // As a default initial behavior, pop up an alert when webgl context is lost. To make your

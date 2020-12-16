@@ -4,9 +4,16 @@ var spinnerElement = document.getElementById('spinner');
 
 
 var Module = {
-        preRun: [],
-        postRun: [],
-        print: (function() {
+  preRun: [],
+  postRun: [],
+
+  // mupen64plus core config
+  coreConfig: {
+    emuMode: 0 // 0 = pure_interpreter; 1 = cached
+  },
+  romData: undefined,
+  
+  print: (function() {
           var element = document.getElementById('output');
           if (element) element.value = ''; // clear browser cache
           return function(text) {
