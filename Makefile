@@ -27,13 +27,16 @@ UI_DIR = $(UI)/projects/unix
 CORE ?= mupen64plus-core-web-netplay
 CORE_DIR = $(CORE)/projects/unix
 CORE_LIB = $(CORE)$(POSTFIX)$(SO_EXTENSION)
+CORE_LIB_STATIC = $(CORE_DIR)/libmupen64plus-web.a
 CORE_LIB_JS = $(CORE)$(POSTFIX).wasm
+
 
 LIBSRC_DIR = deps/libsamplerate
 AUDIO ?= mupen64plus-audio-sdl
 AUDIO_DIR = $(AUDIO)/projects/unix/
 AUDIO_LIB = $(AUDIO).so
 AUDIO_LIB_JS = $(AUDIO)-web.wasm
+AUDIO_LIB_STATIC = $(AUDIO_DIR)/$(AUDIO)-web.a
 
 
 NATIVE_AUDIO := mupen64plus-audio-sdl
@@ -49,16 +52,19 @@ RICE = mupen64plus-video-rice-web-netplay
 RICE_VIDEO_LIB = $(RICE)-web$(POSTFIX)$(SO_EXTENSION)
 RICE_VIDEO_LIB_JS = $(RICE)$(POSTFIX).wasm
 RICE_VIDEO_DIR = $(RICE)/projects/unix/
+RICE_VIDEO_LIB_STATIC = $(RICE_VIDEO_DIR)/$(RICE)-web.a
 
 INPUT ?= mupen64plus-input-sdl
 INPUT_DIR = $(INPUT)/projects/unix
 INPUT_LIB = $(INPUT)$(POSTFIX)$(SO_EXTENSION)
 INPUT_LIB_JS = $(INPUT)$(POSTFIX).wasm
+INPUT_LIB_STATIC = $(INPUT_DIR)/$(INPUT)$(POSTFIX).a
 
 RSP ?= mupen64plus-rsp-hle
 RSP_DIR = $(RSP)/projects/unix
 RSP_LIB = $(RSP)$(POSTFIX)$(SO_EXTENSION)
 RSP_LIB_JS = $(RSP)$(POSTFIX).wasm
+RSP_LIB_STATIC = $(RSP_DIR)/$(RSP)$(POSTFIX).a
 
 TARGET ?= mupen64plus
 PLUGINS_DIR = $(BIN_DIR)/plugins
@@ -71,11 +77,15 @@ POST_JS = $(abspath $(SCRIPTS_DIR)/postfix.js)
 MODULE_JS = module.js
 
 
-PLUGINS = $(PLUGINS_DIR)/$(CORE_LIB) \
-	$(PLUGINS_DIR)/$(AUDIO_LIB) \
-	$(PLUGINS_DIR)/$(INPUT_LIB) \
-	$(PLUGINS_DIR)/$(RSP_LIB) \
-	$(PLUGINS_DIR)/$(RICE_VIDEO_LIB)
+STATIC_PLUGINS = $(CORE_LIB_STATIC) \
+		$(AUDIO_LIB_STATIC) \
+		$(INPUT_LIB_STATIC) \
+		$(RSP_LIB_STATIC) \
+		$(RICE_VIDEO_LIB_STATIC)
+
+PLUGINS = $(PLUGINS_DIR)/$(AUDIO_LIB) \
+	$(PLUGINS_DIR)/$(INPUT_LIB)
+
 
 INPUT_FILES = \
 	$(BIN_DIR)/data/InputAutoCfg.ini \
@@ -348,7 +358,7 @@ DEBUG_LEVEL = -g2
 
 else
 
-OPT_LEVEL = -O3 #-s AGGRESSIVE_VARIABLE_ELIMINATION=1
+OPT_LEVEL = -O3 #-s ASSERTIONS=1 #-s AGGRESSIVE_VARIABLE_ELIMINATION=1
 
 endif
 
@@ -357,10 +367,13 @@ OPT_FLAGS := $(OPT_LEVEL) \
 			$(DEBUG_LEVEL) \
 			-s 'EXTRA_EXPORTED_RUNTIME_METHODS=[\"ccall\", \"cwrap\", \"getValue\", \"FS\"]' \
 			-DEMSCRIPTEN=1 \
+			-DM64P_STATIC_PLUGINS=1 \
 			-DUSE_FRAMESKIPPER=1
 
 $(PLUGINS_DIR)/%.so : %/projects/unix/%.wasm
 	cp "$<" "$@"
+
+$(CORE_LIB_STATIC) : $(CORE_DIR)/$(CORE_LIB_JS)
 
 # libmupen64plus.so.2 deviates from standard naming
 $(PLUGINS_DIR)/$(CORE_LIB) : $(CORE_DIR)/$(CORE_LIB_JS)
@@ -371,6 +384,8 @@ $(PLUGINS_DIR)/$(AUDIO_LIB) : $(AUDIO_DIR)/$(AUDIO_LIB_JS)
 	mkdir -p $(PLUGINS_DIR)
 	cp "$<" "$@"
 
+$(AUDIO_LIB_STATIC) : $(AUDIO_DIR)/$(AUDIO_LIB_JS)
+
 $(PLUGINS_DIR)/$(VIDEO_LIB) : $(VIDEO_DIR)/$(VIDEO_LIB_JS)
 	mkdir -p $(PLUGINS_DIR)
 	cp "$<" "$@"
@@ -379,13 +394,19 @@ $(PLUGINS_DIR)/$(RICE_VIDEO_LIB) : $(RICE_VIDEO_DIR)/$(RICE_VIDEO_LIB_JS)
 	mkdir -p $(PLUGINS_DIR)
 	cp -f "$<" "$@"
 
+$(RICE_VIDEO_LIB_STATIC) : $(RICE_VIDEO_DIR)/$(RICE_VIDEO_LIB_JS)
+
 $(PLUGINS_DIR)/$(INPUT_LIB) : $(INPUT_DIR)/$(INPUT_LIB_JS)
 	mkdir -p $(PLUGINS_DIR)
 	cp "$<" "$@"
 
+$(INPUT_LIB_STATIC) : $(INPUT_DIR)/$(INPUT_LIB_JS);
+
 $(PLUGINS_DIR)/$(RSP_LIB) : $(RSP_DIR)/$(RSP_LIB_JS)
 	mkdir -p $(PLUGINS_DIR)
 	cp "$<" "$@"
+
+$(RSP_LIB_STATIC) : $(RSP_DIR)/$(RSP_LIB_JS)
 
 $(TARGET_ROM): $(SOURCE_ROM)
 	mkdir -p $(@D)
@@ -418,7 +439,8 @@ $(RICE_VIDEO_DIR)/$(RICE_VIDEO_LIB_JS):
 			GLU_CFLAGS="" \
 			V=1 \
 			LOADLIBES="" \
-			OPTFLAGS="$(OPT_FLAGS) -s FULL_ES2=1 -DNO_FILTER_THREAD=1 -s SIDE_MODULE=1"\
+			LDLIBS="../../../$(CORE_LIB_STATIC)" \
+			OPTFLAGS="$(OPT_FLAGS) -s FULL_ES2=1 -DNO_FILTER_THREAD=1"\
 			all
 
 # input files helpers
@@ -453,7 +475,7 @@ $(BIN_DIR)/data/mupen64plus.ini: $(CFG_DIR)/mupen64plus.ini
 $(BIN_DIR)/data/mupencheat.txt: $(CFG_DIR)/mupencheat.txt
 	cp $< $@
 
-$(BIN_DIR)/$(TARGET_HTML): $(INDEX_TEMPLATE) $(PLUGINS) $(INPUT_FILES)
+$(BIN_DIR)/$(TARGET_HTML): $(INDEX_TEMPLATE) $(PLUGINS) $(STATIC_PLUGINS) $(INPUT_FILES)
 	@mkdir -p $(BIN_DIR)
 	rm -f $@
 	# building UI (program entry point)
@@ -473,7 +495,8 @@ $(BIN_DIR)/$(TARGET_HTML): $(INDEX_TEMPLATE) $(PLUGINS) $(INPUT_FILES)
 			GL_CFLAGS="" \
 			GLU_CFLAGS="" \
 			V=1 \
-			OPTFLAGS="$(OPT_FLAGS) -v -s MAIN_MODULE=1 --use-preload-plugins -lidbfs.js -s EXPORT_ALL=1 --preload-file $(BIN_DIR)/plugins@plugins --preload-file $(BIN_DIR)/data@data --shell-file $(INDEX_TEMPLATE) --js-library ../../../mupen64plus-audio-web/src/jslib/audiolib.js -s INITIAL_MEMORY=$(MEMORY) -s \"EXPORTED_FUNCTIONS=[$(EXPORTED_FUNCTIONS)]\" -s DEMANGLE_SUPPORT=1 -s MODULARIZE=1 -s EXPORT_NAME=\"createModule\" -s ENVIRONMENT='web' -s EXPORT_ES6=0 -s NO_EXIT_RUNTIME=1 -s USE_ZLIB=1 -s USE_SDL=2 -s USE_LIBPNG=1 -s FULL_ES2=1 -DEMSCRIPTEN=1 --pre-js $(PRE_JS) --post-js $(POST_JS) -DINPUT_ROM=$(DEFAULT_ROM) $(EMRUN)" \
+			LDLIBS="../../../$(AUDIO_LIB_STATIC) ../../../$(INPUT_LIB_STATIC) ../../../$(RSP_LIB_STATIC) ../../../$(CORE_LIB_STATIC) ../../../$(RICE_VIDEO_LIB_STATIC) ../../../$(LIBSRC_DIR)/build/src/libsamplerate.a" \
+			OPTFLAGS="$(OPT_FLAGS) -v -s EXPORT_ALL=1 --use-preload-plugins -lidbfs.js -s EXPORT_ALL=1 --preload-file $(BIN_DIR)/data@data --shell-file $(INDEX_TEMPLATE) --js-library ../../../mupen64plus-audio-web/src/jslib/audiolib.js --js-library ../../../mupen64plus-core-web-netplay/src/jslib/corelib.js -s INITIAL_MEMORY=$(MEMORY) -s \"EXPORTED_FUNCTIONS=[$(EXPORTED_FUNCTIONS)]\" -s DEMANGLE_SUPPORT=1 -s MODULARIZE=1 -s EXPORT_NAME=\"createModule\" -s ENVIRONMENT='web' -s EXPORT_ES6=0 -s NO_EXIT_RUNTIME=1 -s USE_ZLIB=1 -s USE_SDL=2 -s USE_LIBPNG=1 -s FULL_ES2=1 -s ASYNCIFY=1 -DEMSCRIPTEN=1 --pre-js $(PRE_JS) --post-js $(POST_JS) -DINPUT_ROM=$(DEFAULT_ROM) $(EMRUN)" \
 			all
 
 core: $(CORE_DIR)/$(CORE_LIB)
@@ -496,8 +519,9 @@ $(CORE_DIR)/$(CORE_LIB_JS) :
 		FREETYPE2_CFLAGS="-s USE_FREETYPE=1" \
 		GL_CFLAGS="" \
 		GLU_CFLAGS="" \
+		NETPLAY=1 \
 		V=1 \
-		OPTFLAGS="$(OPT_FLAGS) -s SIDE_MODULE=1 -DONSCREEN_FPS=1 -s USE_SDL=2" \
+		OPTFLAGS="$(OPT_FLAGS) -s EXPORT_ALL=1 -s INITIAL_MEMORY=$(MEMORY) -DONSCREEN_FPS=1 -s USE_SDL=2 -s ASYNCIFY=1 -I ../../src/api --js-library ../../../mupen64plus-core-web-netplay/src/jslib/corelib.js" \
 		all
 
 
@@ -528,7 +552,7 @@ $(AUDIO_DIR)/$(AUDIO_LIB_JS) : libsrc
 		GLU_CFLAGS="" \
 		V=1 \
 		SRC_LDLIBS="../../../$(LIBSRC_DIR)/build/src/libsamplerate.a" \
-		OPTFLAGS="$(OPT_FLAGS) -s SIDE_MODULE=1 -fPIC -DNO_FILTER_THREAD=1 -I../../../$(LIBSRC_DIR)/include --js-library ../../src/jslib"\
+		OPTFLAGS="$(OPT_FLAGS) -fPIC -DNO_FILTER_THREAD=1 -I../../../$(LIBSRC_DIR)/include --js-library ../../src/jslib"\
 		all
 
 glide: $(VIDEO_DIR)/$(VIDEO_LIB)
@@ -551,12 +575,12 @@ $(VIDEO_DIR)/$(VIDEO_LIB_JS):
 		GLU_CFLAGS="" \
 		V=1 \
 		LOADLIBES="" \
-		OPTFLAGS="$(OPT_FLAGS) -s SIDE_MODULE=1 -s FULL_ES2=1 -DNO_FILTER_THREAD=1 -s USE_BOOST_HEADERS=1" \
+		OPTFLAGS="$(OPT_FLAGS) -s FULL_ES2=1 -DNO_FILTER_THREAD=1 -s USE_BOOST_HEADERS=1" \
 		all
 
 input: $(INPUT_DIR)/$(INPUT_LIB)
 
-$(INPUT_DIR)/$(INPUT_LIB_JS):
+$(INPUT_DIR)/$(INPUT_LIB_JS): $(CORE_LIB_STATIC)
 	cd $(INPUT_DIR) && \
 	emmake make \
 		POSTFIX=-web \
@@ -572,7 +596,8 @@ $(INPUT_DIR)/$(INPUT_LIB_JS):
 		GL_CFLAGS="" \
 		GLU_CFLAGS="" \
 		V=1 \
-		OPTFLAGS="$(OPT_FLAGS) -s SIDE_MODULE=1 "\
+		LDLIBS="../../../mupen64plus-core-web-netplay/projects/unix/libmupen64plus-web.a" \
+		OPTFLAGS="$(OPT_FLAGS) "\
 		all
 
 rsp: $(RSP_DIR)/$(RSP_LIB)
@@ -593,7 +618,7 @@ $(RSP_DIR)/$(RSP_LIB_JS) :
 		GL_CFLAGS="" \
 		GLU_CFLAGS="" \
 		V=1 \
-		OPTFLAGS="$(OPT_FLAGS) -s SIDE_MODULE=1 -DVIDEO_HLE_ALLOWED=1" \
+		OPTFLAGS="$(OPT_FLAGS) -DVIDEO_HLE_ALLOWED=1" \
 		all
 
 clean-ui:
@@ -609,15 +634,19 @@ clean-web:
 	rm -f $(AUDIO_DIR)/$(AUDIO_LIB)
 	rm -f $(AUDIO_DIR)/$(AUDIO_LIB_JS)
 	rm -fr $(AUDIO_DIR)/_obj$(POSTFIX)
+	rm -f $(AUDIO_LIB_STATIC)
 	rm -f $(VIDEO_DIR)/$(VIDEO_LIB)
 	rm -f $(VIDEO_DIR)/$(VIDEO_LIB_JS)
 	rm -fr $(VIDEO_DIR)/_obj$(POSTFIX)
 	rm -f $(INPUT_DIR)/$(INPUT_LIB)
 	rm -f $(INPUT_DIR)/$(INPUT_LIB_JS)
 	rm -fr $(INPUT_DIR)/_obj$(POSTFIX)
+	rm -f $(INPUT_LIB_STATIC)
 	rm -f $(RSP_DIR)/$(RSP_LIB)
 	rm -f $(RSP_DIR)/$(RSP_LIB_JS)
+	rm -f $(RSP_LIB_STATIC)
 	rm -fr $(RSP_DIR)/_obj$(POSTFIX)
 	rm -f $(RICE_VIDEO_DIR)/$(RICE_VIDEO_LIB)
 	rm -f $(RICE_VIDEO_DIR)/$(RICE_VIDEO_LIB_JS)
 	rm -fr $(RICE_VIDEO_DIR)/_obj$(POSTFIX)
+	rm -f $(RICE_VIDEO_LIB_STATIC)
