@@ -83,8 +83,11 @@ STATIC_PLUGINS = $(CORE_LIB_STATIC) \
 		$(RSP_LIB_STATIC) \
 		$(RICE_VIDEO_LIB_STATIC)
 
-PLUGINS = $(PLUGINS_DIR)/$(AUDIO_LIB) \
-	$(PLUGINS_DIR)/$(INPUT_LIB)
+PLUGINS =  $(PLUGINS_DIR)/$(CORE_LIB) \
+	$(PLUGINS_DIR)/$(AUDIO_LIB) \
+	$(PLUGINS_DIR)/$(INPUT_LIB) \
+	$(PLUGINS_DIR)/$(RSP_LIB) \
+	$(PLUGINS_DIR)/$(RICE_VIDEO_LIB)
 
 
 INPUT_FILES = \
@@ -358,7 +361,7 @@ DEBUG_LEVEL = -g2
 
 else
 
-OPT_LEVEL = -O3 #-s ASSERTIONS=1 #-s AGGRESSIVE_VARIABLE_ELIMINATION=1
+OPT_LEVEL = -g2 -O1 #-s AGGRESSIVE_VARIABLE_ELIMINATION=1
 
 endif
 
@@ -367,8 +370,30 @@ OPT_FLAGS := $(OPT_LEVEL) \
 			$(DEBUG_LEVEL) \
 			-s 'EXTRA_EXPORTED_RUNTIME_METHODS=[\"ccall\", \"cwrap\", \"getValue\", \"FS\"]' \
 			-DEMSCRIPTEN=1 \
-			-DM64P_STATIC_PLUGINS=1 \
 			-DUSE_FRAMESKIPPER=1
+
+
+STATIC_LIBRARIES =
+CORE_LD_LIB = 
+
+ifeq ($(static-plugins), 0)
+USE_DYNAMIC_PLUGINS = 1
+USE_STATIC_PLUGINS = 0
+else
+USE_DYNAMIC_PLUGINS = 0
+USE_STATIC_PLUGINS = 1
+
+CORE_LD_LIB = ../../../$(CORE_LIB_STATIC)
+STATIC_LIBRARIES = ../../../$(AUDIO_LIB_STATIC) \
+		../../../$(INPUT_LIB_STATIC) \
+		../../../$(RSP_LIB_STATIC) \
+		../../../$(CORE_LIB_STATIC) \
+		../../../$(RICE_VIDEO_LIB_STATIC) \
+		../../../$(LIBSRC_DIR)/build/src/libsamplerate.a
+
+OPT_FLAGS += -DM64P_STATIC_PLUGINS=1
+endif
+
 
 $(PLUGINS_DIR)/%.so : %/projects/unix/%.wasm
 	cp "$<" "$@"
@@ -427,6 +452,7 @@ $(RICE_VIDEO_DIR)/$(RICE_VIDEO_LIB_JS):
 			UNAME=Linux \
 			USE_FRAMESKIPPER=1 \
 			EMSCRIPTEN=1 \
+			M64P_STATIC_PLUGINS=$(USE_STATIC_PLUGINS) \
 			SO_EXTENSION="wasm" \
 			USE_GLES=1 \
 			NO_ASM=1 \
@@ -439,8 +465,8 @@ $(RICE_VIDEO_DIR)/$(RICE_VIDEO_LIB_JS):
 			GLU_CFLAGS="" \
 			V=1 \
 			LOADLIBES="" \
-			LDLIBS="../../../$(CORE_LIB_STATIC)" \
-			OPTFLAGS="$(OPT_FLAGS) -s FULL_ES2=1 -DNO_FILTER_THREAD=1"\
+			LDLIBS="$(CORE_LD_LIB)" \
+			OPTFLAGS="$(OPT_FLAGS) -s SIDE_MODULE=$(USE_DYNAMIC_PLUGINS) -s FULL_ES2=1 -DNO_FILTER_THREAD=1"\
 			all
 
 # input files helpers
@@ -485,6 +511,7 @@ $(BIN_DIR)/$(TARGET_HTML): $(INDEX_TEMPLATE) $(PLUGINS) $(STATIC_PLUGINS) $(INPU
 			TARGET=$(BIN_DIR)/$(TARGET_HTML) \
 			UNAME=Linux \
 			EMSCRIPTEN=1 \
+			M64P_STATIC_PLUGINS=$(USE_STATIC_PLUGINS) \
 			EXEEXT=".html" \
 			USE_GLES=1 \
 			ZLIB_CFLAGS="-s USE_ZLIB=1" \
@@ -495,8 +522,25 @@ $(BIN_DIR)/$(TARGET_HTML): $(INDEX_TEMPLATE) $(PLUGINS) $(STATIC_PLUGINS) $(INPU
 			GL_CFLAGS="" \
 			GLU_CFLAGS="" \
 			V=1 \
-			LDLIBS="../../../$(AUDIO_LIB_STATIC) ../../../$(INPUT_LIB_STATIC) ../../../$(RSP_LIB_STATIC) ../../../$(CORE_LIB_STATIC) ../../../$(RICE_VIDEO_LIB_STATIC) ../../../$(LIBSRC_DIR)/build/src/libsamplerate.a" \
-			OPTFLAGS="$(OPT_FLAGS) -v -s EXPORT_ALL=1 --use-preload-plugins -lidbfs.js -s EXPORT_ALL=1 --preload-file $(BIN_DIR)/data@data --shell-file $(INDEX_TEMPLATE) --js-library ../../../mupen64plus-audio-web/src/jslib/audiolib.js --js-library ../../../mupen64plus-core-web-netplay/src/jslib/corelib.js -s INITIAL_MEMORY=$(MEMORY) -s \"EXPORTED_FUNCTIONS=[$(EXPORTED_FUNCTIONS)]\" -s DEMANGLE_SUPPORT=1 -s MODULARIZE=1 -s EXPORT_NAME=\"createModule\" -s ENVIRONMENT='web' -s EXPORT_ES6=0 -s NO_EXIT_RUNTIME=1 -s USE_ZLIB=1 -s USE_SDL=2 -s USE_LIBPNG=1 -s FULL_ES2=1 -s ASYNCIFY=1 -DEMSCRIPTEN=1 --pre-js $(PRE_JS) --post-js $(POST_JS) -DINPUT_ROM=$(DEFAULT_ROM) $(EMRUN)" \
+			LDLIBS="$(STATIC_LIBRARIES)" \
+			OPTFLAGS="$(OPT_FLAGS) -v \
+			-s MAIN_MODULE=$(USE_DYNAMIC_PLUGINS) \
+			-s EXPORT_ALL=1 \
+			--use-preload-plugins -lidbfs.js \
+			-s EXPORT_ALL=1 --preload-file $(BIN_DIR)/data@data \
+			--preload-file $(BIN_DIR)/plugins@plugins \
+			--shell-file $(INDEX_TEMPLATE) \
+			--js-library ../../../mupen64plus-audio-web/src/jslib/audiolib.js \
+			--js-library ../../../mupen64plus-core-web-netplay/src/jslib/corelib.js \
+			-s INITIAL_MEMORY=$(MEMORY) \
+			-s \"EXPORTED_FUNCTIONS=[$(EXPORTED_FUNCTIONS)]\" \
+			-s DEMANGLE_SUPPORT=1 -s MODULARIZE=1 -s EXPORT_NAME=\"createModule\" \
+			-s ENVIRONMENT='web' -s EXPORT_ES6=0 \
+			-s NO_EXIT_RUNTIME=1 -s USE_ZLIB=1 \
+			-s USE_SDL=2 -s USE_LIBPNG=1 -s FULL_ES2=1 \
+			-s ASYNCIFY=1 -s 'ASYNCIFY_IMPORTS=[\"waitForReliableMessage\"]' \
+			-DEMSCRIPTEN=1 --pre-js $(PRE_JS) --post-js $(POST_JS) \
+			-DINPUT_ROM=$(DEFAULT_ROM) $(EMRUN)" \
 			all
 
 core: $(CORE_DIR)/$(CORE_LIB)
@@ -507,6 +551,7 @@ $(CORE_DIR)/$(CORE_LIB_JS) :
 		POSTFIX=-web \
 		UNAME=Linux \
 		EMSCRIPTEN=1 \
+		M64P_STATIC_PLUGINS=$(USE_STATIC_PLUGINS) \
 		TARGET="$(CORE_LIB_JS)" \
 		SONAME="" \
 		SO_EXTENSION="wasm" \
@@ -521,7 +566,7 @@ $(CORE_DIR)/$(CORE_LIB_JS) :
 		GLU_CFLAGS="" \
 		NETPLAY=1 \
 		V=1 \
-		OPTFLAGS="$(OPT_FLAGS) -s EXPORT_ALL=1 -s INITIAL_MEMORY=$(MEMORY) -DONSCREEN_FPS=1 -s USE_SDL=2 -s ASYNCIFY=1 -I ../../src/api --js-library ../../../mupen64plus-core-web-netplay/src/jslib/corelib.js" \
+		OPTFLAGS="$(OPT_FLAGS) -s SIDE_MODULE=$(USE_DYNAMIC_PLUGINS) -s EXPORT_ALL=1 -s INITIAL_MEMORY=$(MEMORY) -DONSCREEN_FPS=1 -s USE_SDL=2 -s ASYNCIFY=1 -I ../../src/api --js-library ../../../mupen64plus-core-web-netplay/src/jslib/corelib.js" \
 		all
 
 
@@ -540,6 +585,7 @@ $(AUDIO_DIR)/$(AUDIO_LIB_JS) : libsrc
 		POSTFIX=-web \
 		UNAME="Linux" \
 		EMSCRIPTEN=1 \
+		M64P_STATIC_PLUGINS=$(USE_STATIC_PLUGINS) \
 		NO_OSS=1 \
 		SO_EXTENSION="wasm" \
 		USE_GLES=1 \
@@ -552,7 +598,7 @@ $(AUDIO_DIR)/$(AUDIO_LIB_JS) : libsrc
 		GLU_CFLAGS="" \
 		V=1 \
 		SRC_LDLIBS="../../../$(LIBSRC_DIR)/build/src/libsamplerate.a" \
-		OPTFLAGS="$(OPT_FLAGS) -fPIC -DNO_FILTER_THREAD=1 -I../../../$(LIBSRC_DIR)/include --js-library ../../src/jslib"\
+		OPTFLAGS="$(OPT_FLAGS) -s SIDE_MODULE=$(USE_DYNAMIC_PLUGINS) -fPIC -DNO_FILTER_THREAD=1 -I../../../$(LIBSRC_DIR)/include --js-library ../../src/jslib"\
 		all
 
 glide: $(VIDEO_DIR)/$(VIDEO_LIB)
@@ -563,6 +609,7 @@ $(VIDEO_DIR)/$(VIDEO_LIB_JS):
 		POSTFIX=-web \
 		USE_FRAMESKIPPER=1 \
 		EMSCRIPTEN=1 \
+		M64P_STATIC_PLUGINS=$(USE_STATIC_PLUGINS) \
 		SO_EXTENSION="wasm" \
 		USE_GLES=1 \
 		NO_ASM=1 \
@@ -575,10 +622,13 @@ $(VIDEO_DIR)/$(VIDEO_LIB_JS):
 		GLU_CFLAGS="" \
 		V=1 \
 		LOADLIBES="" \
-		OPTFLAGS="$(OPT_FLAGS) -s FULL_ES2=1 -DNO_FILTER_THREAD=1 -s USE_BOOST_HEADERS=1" \
+		OPTFLAGS="$(OPT_FLAGS) -s SIDE_MODULE=$(USE_DYNAMIC_PLUGINS) -s FULL_ES2=1 -DNO_FILTER_THREAD=1 -s USE_BOOST_HEADERS=1" \
 		all
 
 input: $(INPUT_DIR)/$(INPUT_LIB)
+
+
+# ../../../mupen64plus-core-web-netplay/projects/unix/libmupen64plus-web.a
 
 $(INPUT_DIR)/$(INPUT_LIB_JS): $(CORE_LIB_STATIC)
 	cd $(INPUT_DIR) && \
@@ -586,6 +636,7 @@ $(INPUT_DIR)/$(INPUT_LIB_JS): $(CORE_LIB_STATIC)
 		POSTFIX=-web \
 		UNAME="Linux" \
 		EMSCRIPTEN=1 \
+		M64P_STATIC_PLUGINS=$(USE_STATIC_PLUGINS) \
 		SO_EXTENSION="wasm" \
 		USE_GLES=1 NO_ASM=1 \
 		ZLIB_CFLAGS="-s USE_ZLIB=1" \
@@ -596,8 +647,8 @@ $(INPUT_DIR)/$(INPUT_LIB_JS): $(CORE_LIB_STATIC)
 		GL_CFLAGS="" \
 		GLU_CFLAGS="" \
 		V=1 \
-		LDLIBS="../../../mupen64plus-core-web-netplay/projects/unix/libmupen64plus-web.a" \
-		OPTFLAGS="$(OPT_FLAGS) "\
+		LDLIBS="" \
+		OPTFLAGS="$(OPT_FLAGS) -s SIDE_MODULE=$(USE_DYNAMIC_PLUGINS)"\
 		all
 
 rsp: $(RSP_DIR)/$(RSP_LIB)
@@ -608,6 +659,7 @@ $(RSP_DIR)/$(RSP_LIB_JS) :
 		POSTFIX=-web \
 		UNAME=Linux \
 		EMSCRIPTEN=1 \
+		M64P_STATIC_PLUGINS=$(USE_STATIC_PLUGINS) \
 		SO_EXTENSION="wasm" \
 		USE_GLES=1 NO_ASM=1 NO_OSS=1 \
 		ZLIB_CFLAGS="-s USE_ZLIB=1" \
@@ -618,7 +670,7 @@ $(RSP_DIR)/$(RSP_LIB_JS) :
 		GL_CFLAGS="" \
 		GLU_CFLAGS="" \
 		V=1 \
-		OPTFLAGS="$(OPT_FLAGS) -DVIDEO_HLE_ALLOWED=1" \
+		OPTFLAGS="$(OPT_FLAGS) -s SIDE_MODULE=$(USE_DYNAMIC_PLUGINS) -DVIDEO_HLE_ALLOWED=1" \
 		all
 
 clean-ui:
@@ -650,3 +702,4 @@ clean-web:
 	rm -f $(RICE_VIDEO_DIR)/$(RICE_VIDEO_LIB_JS)
 	rm -fr $(RICE_VIDEO_DIR)/_obj$(POSTFIX)
 	rm -f $(RICE_VIDEO_LIB_STATIC)
+	rm -fr $(UI_DIR)/_obj$(POSTFIX)
