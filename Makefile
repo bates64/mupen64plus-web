@@ -47,6 +47,7 @@ VIDEO ?= mupen64plus-video-glide64mk2
 VIDEO_DIR = $(VIDEO)/projects/unix
 VIDEO_LIB_JS = $(VIDEO)$(POSTFIX).wasm
 VIDEO_LIB = $(VIDEO)$(POSTFIX)$(SO_EXTENSION)
+VIDEO_LIB_STATIC = $(VIDEO_DIR)/$(VIDEO)-web.a
 
 RICE = mupen64plus-video-rice-web-netplay
 RICE_VIDEO_LIB = $(RICE)-web$(POSTFIX)$(SO_EXTENSION)
@@ -82,12 +83,16 @@ STATIC_PLUGINS = $(CORE_LIB_STATIC) \
 		$(INPUT_LIB_STATIC) \
 		$(RSP_LIB_STATIC) \
 		$(RICE_VIDEO_LIB_STATIC)
+#		$(VIDEO_LIB_STATIC)
+
 
 PLUGINS =  $(PLUGINS_DIR)/$(CORE_LIB) \
 	$(PLUGINS_DIR)/$(AUDIO_LIB) \
 	$(PLUGINS_DIR)/$(INPUT_LIB) \
 	$(PLUGINS_DIR)/$(RSP_LIB) \
 	$(PLUGINS_DIR)/$(RICE_VIDEO_LIB)
+#	$(PLUGINS_DIR)/$(VIDEO_LIB)
+
 
 
 INPUT_FILES = \
@@ -361,7 +366,7 @@ DEBUG_LEVEL = -g2
 
 else
 
-OPT_LEVEL = -g2 -O1 #-s AGGRESSIVE_VARIABLE_ELIMINATION=1
+OPT_LEVEL = -g2 -O3 #-s AGGRESSIVE_VARIABLE_ELIMINATION=1
 
 endif
 
@@ -410,6 +415,8 @@ $(PLUGINS_DIR)/$(AUDIO_LIB) : $(AUDIO_DIR)/$(AUDIO_LIB_JS)
 	cp "$<" "$@"
 
 $(AUDIO_LIB_STATIC) : $(AUDIO_DIR)/$(AUDIO_LIB_JS)
+
+$(VIDEO_LIB_STATIC) : $(VIDEO_DIR)/$(VIDEO_LIB_JS)
 
 $(PLUGINS_DIR)/$(VIDEO_LIB) : $(VIDEO_DIR)/$(VIDEO_LIB_JS)
 	mkdir -p $(PLUGINS_DIR)
@@ -528,7 +535,6 @@ $(BIN_DIR)/$(TARGET_HTML): $(INDEX_TEMPLATE) $(PLUGINS) $(STATIC_PLUGINS) $(INPU
 			-s EXPORT_ALL=1 \
 			--use-preload-plugins -lidbfs.js \
 			-s EXPORT_ALL=1 --preload-file $(BIN_DIR)/data@data \
-			--preload-file $(BIN_DIR)/plugins@plugins \
 			--shell-file $(INDEX_TEMPLATE) \
 			--js-library ../../../mupen64plus-audio-web/src/jslib/audiolib.js \
 			--js-library ../../../mupen64plus-core-web-netplay/src/jslib/corelib.js \
@@ -539,6 +545,7 @@ $(BIN_DIR)/$(TARGET_HTML): $(INDEX_TEMPLATE) $(PLUGINS) $(STATIC_PLUGINS) $(INPU
 			-s NO_EXIT_RUNTIME=1 -s USE_ZLIB=1 \
 			-s USE_SDL=2 -s USE_LIBPNG=1 -s FULL_ES2=1 \
 			-s ASYNCIFY=1 -s 'ASYNCIFY_IMPORTS=[\"waitForReliableMessage\"]' \
+			-s USE_BOOST_HEADERS=1 \
 			-DEMSCRIPTEN=1 --pre-js $(PRE_JS) --post-js $(POST_JS) \
 			-DINPUT_ROM=$(DEFAULT_ROM) $(EMRUN)" \
 			all
@@ -622,6 +629,7 @@ $(VIDEO_DIR)/$(VIDEO_LIB_JS):
 		GLU_CFLAGS="" \
 		V=1 \
 		LOADLIBES="" \
+		LDLIBS="$(CORE_LD_LIB)" \
 		OPTFLAGS="$(OPT_FLAGS) -s SIDE_MODULE=$(USE_DYNAMIC_PLUGINS) -s FULL_ES2=1 -DNO_FILTER_THREAD=1 -s USE_BOOST_HEADERS=1" \
 		all
 
@@ -698,6 +706,17 @@ clean-web:
 	rm -f $(RSP_DIR)/$(RSP_LIB_JS)
 	rm -f $(RSP_LIB_STATIC)
 	rm -fr $(RSP_DIR)/_obj$(POSTFIX)
+	rm -f $(RICE_VIDEO_DIR)/$(RICE_VIDEO_LIB)
+	rm -f $(RICE_VIDEO_DIR)/$(RICE_VIDEO_LIB_JS)
+	rm -fr $(RICE_VIDEO_DIR)/_obj$(POSTFIX)
+	rm -f $(RICE_VIDEO_LIB_STATIC)
+	rm -fr $(UI_DIR)/_obj$(POSTFIX)
+
+clean-video:
+	rm -fr $(BIN_DIR)
+	rm -f $(VIDEO_DIR)/$(VIDEO_LIB)
+	rm -f $(VIDEO_DIR)/$(VIDEO_LIB_JS)
+	rm -fr $(VIDEO_DIR)/_obj$(POSTFIX)
 	rm -f $(RICE_VIDEO_DIR)/$(RICE_VIDEO_LIB)
 	rm -f $(RICE_VIDEO_DIR)/$(RICE_VIDEO_LIB_JS)
 	rm -fr $(RICE_VIDEO_DIR)/_obj$(POSTFIX)
