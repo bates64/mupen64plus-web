@@ -1,7 +1,3 @@
-var statusElement = document.getElementById('status');
-var progressElement = document.getElementById('progress');
-var spinnerElement = document.getElementById('spinner');
-
 
 var Module = {
   preRun: [],
@@ -45,6 +41,7 @@ var Module = {
     }
   },
   setStatus: function(text) {
+    /*
     if (!Module.setStatus.last) Module.setStatus.last = { time: Date.now(), text: '' };
     if (text === Module.setStatus.text) return;
     var m = text.match(/([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/);
@@ -63,6 +60,7 @@ var Module = {
       if (!text) spinnerElement.style.display = 'none';
     }
     statusElement.innerHTML = text;
+    */
   },
   totalDependencies: 0,
   monitorRunDependencies: function(left) {
@@ -77,7 +75,6 @@ var Module = {
     
     var xhr = new XMLHttpRequest();
     xhr.overrideMimeType('test/pain; charset=x-user-defined');
-
 
     xhr.onreadystatechange = (e) => {
       if(xhr.readyState == 4) {
@@ -115,7 +112,6 @@ Module.setStatus('Downloading...');
 window.onerror = function(event) {
   // TODO: do not warn on ok events like simulating an infinite loop or exitStatus
   Module.setStatus('Exception thrown, see JavaScript console');
-  spinnerElement.style.display = 'none';
   Module.setStatus = function(text) {
     if (text) Module.printErr('[post-exception status] ' + text);
   };

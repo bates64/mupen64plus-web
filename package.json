@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Emscripten based web port of Mupen64plus N64 Emulator",
   "main": "./bin/web/main.js",
+  "types": "./scripts/main.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
