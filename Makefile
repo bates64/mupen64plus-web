@@ -71,7 +71,7 @@ TARGET ?= mupen64plus
 PLUGINS_DIR = $(BIN_DIR)/plugins
 OUTPUT_ROMS_DIR = $(BIN_DIR)/$(ROMS_DIR)
 TARGET_LIB = $(TARGET)$(POSTFIX)$(SO_EXTENSION)
-TARGET_HTML ?= index.html
+TARGET_JS ?= index.js
 INDEX_TEMPLATE = $(abspath $(SCRIPTS_DIR)/index.template.html)
 PRE_JS = $(abspath $(SCRIPTS_DIR)/prefix.js)
 POST_JS = $(abspath $(SCRIPTS_DIR)/postfix.js)
@@ -107,122 +107,43 @@ INPUT_FILES = \
 	$(BIN_DIR)/data/mupen64plus.cfg \
 	$(BIN_DIR)/data/mupen64plus.ini \
 
+
 define EXPORTED_FUNCTIONS
-'_startEmulator', \
-'_main', \
-'_png_create_write_struct', \
-'_png_create_info_struct', \
-'_png_destroy_write_struct', \
-'_png_set_longjmp_fn', \
-'_png_set_write_fn', \
-'_png_set_IHDR', \
-'_png_set_rows', \
-'_png_write_png', \
-'_fopen', \
-'_fclose', \
-'__ZTVN10__cxxabiv117__class_type_infoE', \
-'__ZTVNSt3__29basic_iosIcNS_11char_traitsIcEEEE', \
-'__ZNSt3__27codecvtIcc11__mbstate_tE2idE', \
-'__ZTISt8bad_cast', \
-'__ZTISt12length_error', \
-'__ZTVSt12length_error', \
-'__ZNSt3__25ctypeIcE2idE', \
-'__ZTINSt3__213basic_istreamIcNS_11char_traitsIcEEEE', \
-'__ZTVN10__cxxabiv120__si_class_type_infoE', \
-'__ZTINSt3__215basic_streambufIcNS_11char_traitsIcEEEE', \
-'__ZTVSt9exception', \
-'__ZTVN10__cxxabiv119__pointer_type_infoE', \
-'__ZTISt9exception', \
-'__ZNSt3__25ctypeIcE2idE', \
-'__ZTVN10__cxxabiv121__vmi_class_type_infoE', \
-'_calloc', \
-'_fwrite', \
-'_png_destroy_read_struct', \
-'_fread', \
-'_png_sig_cmp', \
-'_png_create_read_struct', \
-'_png_set_read_fn', \
-'_png_set_sig_bytes', \
-'_png_read_info', \
-'_png_get_IHDR', \
-'_png_set_strip_16', \
-'_png_set_palette_to_rgb', \
-'_png_set_expand_gray_1_2_4_to_8', \
-'_png_set_gray_to_rgb', \
-'_png_get_valid', \
-'_png_set_tRNS_to_alpha', \
-'_png_set_filler', \
-'_png_set_bgr', \
-'_png_get_bKGD', \
-'_png_get_tRNS', \
-'_png_read_update_info', \
-'_png_get_rowbytes', \
-'_png_read_image', \
-'_png_read_end', \
-'_fprintf', \
-'_png_malloc', \
-'_png_set_PLTE', \
-'_png_write_info', \
-'_png_write_rows', \
-'_png_write_end', \
-'___cxa_pure_virtual', \
-'__ZNSt8bad_castD1Ev', \
-'__ZNSt12length_errorD1Ev', \
-'__ZNSt3__213basic_istreamIcNS_11char_traitsIcEEED1Ev', \
-'__ZNSt3__213basic_istreamIcNS_11char_traitsIcEEED0Ev', \
-'__ZTv0_n12_NSt3__213basic_istreamIcNS_11char_traitsIcEEED1Ev', \
-'__ZTv0_n12_NSt3__213basic_istreamIcNS_11char_traitsIcEEED0Ev', \
-'__ZNSt3__215basic_streambufIcNS_11char_traitsIcEEE9showmanycEv', \
-'__ZNSt3__215basic_streambufIcNS_11char_traitsIcEEE6xsgetnEPcl', \
-'__ZNSt3__215basic_streambufIcNS_11char_traitsIcEEE5uflowEv', \
-'__ZNSt3__215basic_streambufIcNS_11char_traitsIcEEE6xsputnEPKcl', \
-'__Znam', \
-'_memset', \
-'_SDL_CreateMutex', \
-'_memcpy', \
-'_vsprintf', \
-'_strdup', \
-'_stat', \
-'_strlen', \
-'_strchr', \
-'_vsprintf', \
-'_vsnprintf', \
-'_fseek', \
-'_ftell', \
-'_isspace', \
-'_memmove', \
-'_strcasecmp', \
-'_sscanf', \
-'_strtol', \
-'_strtod', \
-'_strcpy', \
-'_strcat', \
-'_fgets', \
-'_tolower', \
-'_strcmp', \
-'_strncmp', \
-'_memcmp', \
-'_sprintf', \
-'_strncpy', \
-'_SDL_WasInit', \
-'_SDL_InitSubSystem', \
-'_SDL_NumJoysticks', \
-'_SDL_QuitSubSystem', \
-'_strcasestr', \
-'_atoi', \
-'_SDL_GetError', \
-'__ZNSt3__28ios_base4initEPv', \
-'__ZNSt3__215basic_streambufIcNS_11char_traitsIcEEEC2Ev', \
-'__ZNSt3__26localeC1ERKS0_', \
-'__ZNKSt3__26locale9has_facetERNS0_2idE', \
-'__ZNSt3__26localeD1Ev', \
-'__ZNKSt3__26locale9use_facetERNS0_2idE', \
-'__ZNSt3__28ios_base5clearEj', \
-'__ZNKSt3__28ios_base6getlocEv', \
-'__ZNSt3__213basic_istreamIcNS_11char_traitsIcEEE7getlineEPclc', \
-'__Znwm', \
-'__ZdlPv', \
-'_fseeko'
+'_AiLenChanged', \
+'_ChangeWindow', \
+'_ControllerCommand', \
+'_DoRspCycles', \
+'_InitiateAudio', \
+'_InitiateGFX', \
+'_InitiateRSP', \
+'_PluginGetVersionAudio', \
+'_PluginGetVersionInput', \
+'_PluginGetVersionRSP', \
+'_PluginGetVersionVideo', \
+'_ProcessAList', \
+'_ProcessDList', \
+'_ProcessRDPList', \
+'_ReadController', \
+'_ReadScreen2', \
+'_ResizeVideoOutput', \
+'_RomClosedAudio', \
+'_RomClosedInput', \
+'_RomClosedVideo', \
+'_RomOpenAudio', \
+'_RomOpenInput', \
+'_RomOpenVideo', \
+'_SDL_KeyDown', \
+'_SDL_KeyUp', \
+'_SetSpeedFactor', \
+'_ShowCFB', \
+'_UpdateScreen', \
+'_ViStatusChanged', \
+'_ViWidthChanged', \
+'_VolumeDown', \
+'_VolumeGetString', \
+'_VolumeMute', \
+'_VolumeUp', \
+'_main'
 endef
 
 
@@ -247,7 +168,7 @@ NATIVE_PLUGINS := \
 NATIVE_EXE := $(NATIVE_BIN)/mupen64plus
 NATIVE_DEPS := $(NATIVE_PLUGINS) $(NATIVE_EXE)
 
-WEB_DEPS := $(BIN_DIR)/$(TARGET_HTML) $(TARGET_ROM)
+WEB_DEPS := $(BIN_DIR)/$(TARGET_JS) $(TARGET_ROM)
 
 ALL_DEPS := $(WEB_DEPS)
 ifeq ($(PLATFORM), native)
@@ -366,14 +287,14 @@ DEBUG_LEVEL = -g2
 
 else
 
-OPT_LEVEL = -g2 -O3 #-s AGGRESSIVE_VARIABLE_ELIMINATION=1
+OPT_LEVEL = -O3 --profiling -g3 # -g3 -Oz -s ASSERTIONS=1 -s AGGRESSIVE_VARIABLE_ELIMINATION=1 -fsanitize=undefined -Wcast-align -Wover-aligned -s WARN_UNALIGNED=1 #-s AGGRESSIVE_VARIABLE_ELIMINATION=1
 
 endif
 
 
 OPT_FLAGS := $(OPT_LEVEL) \
 			$(DEBUG_LEVEL) \
-			-s 'EXTRA_EXPORTED_RUNTIME_METHODS=[\"ccall\", \"cwrap\", \"getValue\", \"FS\"]' \
+			-s 'EXTRA_EXPORTED_RUNTIME_METHODS=[\"ccall\", \"cwrap\", \"getValue\", \"FS\", \"setValue\"]' \
 			-DEMSCRIPTEN=1 \
 			-DUSE_FRAMESKIPPER=1
 
@@ -473,7 +394,7 @@ $(RICE_VIDEO_DIR)/$(RICE_VIDEO_LIB_JS):
 			V=1 \
 			LOADLIBES="" \
 			LDLIBS="$(CORE_LD_LIB)" \
-			OPTFLAGS="$(OPT_FLAGS) -s SIDE_MODULE=$(USE_DYNAMIC_PLUGINS) -s FULL_ES2=1 -DNO_FILTER_THREAD=1"\
+			OPTFLAGS="$(OPT_FLAGS) -s ERROR_ON_UNDEFINED_SYMBOLS=0 -s SIDE_MODULE=$(USE_DYNAMIC_PLUGINS) -s FULL_ES2=1 -DNO_FILTER_THREAD=1"\
 			all
 
 # input files helpers
@@ -508,14 +429,14 @@ $(BIN_DIR)/data/mupen64plus.ini: $(CFG_DIR)/mupen64plus.ini
 $(BIN_DIR)/data/mupencheat.txt: $(CFG_DIR)/mupencheat.txt
 	cp $< $@
 
-$(BIN_DIR)/$(TARGET_HTML): $(INDEX_TEMPLATE) $(PLUGINS) $(STATIC_PLUGINS) $(INPUT_FILES)
+$(BIN_DIR)/$(TARGET_JS): $(INDEX_TEMPLATE) $(PLUGINS) $(STATIC_PLUGINS) $(INPUT_FILES)
 	@mkdir -p $(BIN_DIR)
 	rm -f $@
 	# building UI (program entry point)
 	cd $(UI_DIR) && \
 		EMCC_FORCE_STDLIBS="libc++,libc" emmake make \
 			POSTFIX=-web \
-			TARGET=$(BIN_DIR)/$(TARGET_HTML) \
+			TARGET=$(BIN_DIR)/$(TARGET_JS) \
 			UNAME=Linux \
 			EMSCRIPTEN=1 \
 			M64P_STATIC_PLUGINS=$(USE_STATIC_PLUGINS) \
@@ -531,10 +452,11 @@ $(BIN_DIR)/$(TARGET_HTML): $(INDEX_TEMPLATE) $(PLUGINS) $(STATIC_PLUGINS) $(INPU
 			V=1 \
 			LDLIBS="$(STATIC_LIBRARIES)" \
 			OPTFLAGS="$(OPT_FLAGS) -v \
+			-s ERROR_ON_UNDEFINED_SYMBOLS=0	\
 			-s MAIN_MODULE=$(USE_DYNAMIC_PLUGINS) \
 			-s EXPORT_ALL=1 \
 			--use-preload-plugins -lidbfs.js \
-			-s EXPORT_ALL=1 --preload-file $(BIN_DIR)/data@data \
+			--preload-file $(BIN_DIR)/data@data \
 			--shell-file $(INDEX_TEMPLATE) \
 			--js-library ../../../mupen64plus-audio-web/src/jslib/audiolib.js \
 			--js-library ../../../mupen64plus-core-web-netplay/src/jslib/corelib.js \
@@ -544,7 +466,7 @@ $(BIN_DIR)/$(TARGET_HTML): $(INDEX_TEMPLATE) $(PLUGINS) $(STATIC_PLUGINS) $(INPU
 			-s ENVIRONMENT='web' -s EXPORT_ES6=0 \
 			-s NO_EXIT_RUNTIME=1 -s USE_ZLIB=1 \
 			-s USE_SDL=2 -s USE_LIBPNG=1 -s FULL_ES2=1 \
-			-s ASYNCIFY=1 -s 'ASYNCIFY_IMPORTS=[\"waitForReliableMessage\"]' \
+			-s ASYNCIFY=1 -s 'ASYNCIFY_IMPORTS=[\"waitForReliableMessage\",\"checkForUnreliableMessages\"]' \
 			-s USE_BOOST_HEADERS=1 \
 			-DEMSCRIPTEN=1 --pre-js $(PRE_JS) --post-js $(POST_JS) \
 			-DINPUT_ROM=$(DEFAULT_ROM) $(EMRUN)" \
@@ -573,7 +495,7 @@ $(CORE_DIR)/$(CORE_LIB_JS) :
 		GLU_CFLAGS="" \
 		NETPLAY=1 \
 		V=1 \
-		OPTFLAGS="$(OPT_FLAGS) -s SIDE_MODULE=$(USE_DYNAMIC_PLUGINS) -s EXPORT_ALL=1 -s INITIAL_MEMORY=$(MEMORY) -DONSCREEN_FPS=1 -s USE_SDL=2 -s ASYNCIFY=1 -I ../../src/api --js-library ../../../mupen64plus-core-web-netplay/src/jslib/corelib.js" \
+		OPTFLAGS="$(OPT_FLAGS) -s ERROR_ON_UNDEFINED_SYMBOLS=0 -s SIDE_MODULE=$(USE_DYNAMIC_PLUGINS) -s EXPORT_ALL=1 -s INITIAL_MEMORY=$(MEMORY) -DONSCREEN_FPS=1 -s USE_SDL=2 -s ASYNCIFY=1 -I ../../src/api --js-library ../../../mupen64plus-core-web-netplay/src/jslib/corelib.js" \
 		all
 
 
@@ -605,7 +527,7 @@ $(AUDIO_DIR)/$(AUDIO_LIB_JS) : libsrc
 		GLU_CFLAGS="" \
 		V=1 \
 		SRC_LDLIBS="../../../$(LIBSRC_DIR)/build/src/libsamplerate.a" \
-		OPTFLAGS="$(OPT_FLAGS) -s SIDE_MODULE=$(USE_DYNAMIC_PLUGINS) -fPIC -DNO_FILTER_THREAD=1 -I../../../$(LIBSRC_DIR)/include --js-library ../../src/jslib"\
+		OPTFLAGS="$(OPT_FLAGS) -s ERROR_ON_UNDEFINED_SYMBOLS=0 -s SIDE_MODULE=$(USE_DYNAMIC_PLUGINS) -fPIC -DNO_FILTER_THREAD=1 -I../../../$(LIBSRC_DIR)/include"\
 		all
 
 glide: $(VIDEO_DIR)/$(VIDEO_LIB)
@@ -656,7 +578,7 @@ $(INPUT_DIR)/$(INPUT_LIB_JS): $(CORE_LIB_STATIC)
 		GLU_CFLAGS="" \
 		V=1 \
 		LDLIBS="" \
-		OPTFLAGS="$(OPT_FLAGS) -s SIDE_MODULE=$(USE_DYNAMIC_PLUGINS)"\
+		OPTFLAGS="$(OPT_FLAGS) -s ERROR_ON_UNDEFINED_SYMBOLS=0 -s SIDE_MODULE=$(USE_DYNAMIC_PLUGINS)"\
 		all
 
 rsp: $(RSP_DIR)/$(RSP_LIB)
@@ -678,7 +600,7 @@ $(RSP_DIR)/$(RSP_LIB_JS) :
 		GL_CFLAGS="" \
 		GLU_CFLAGS="" \
 		V=1 \
-		OPTFLAGS="$(OPT_FLAGS) -s SIDE_MODULE=$(USE_DYNAMIC_PLUGINS) -DVIDEO_HLE_ALLOWED=1" \
+		OPTFLAGS="$(OPT_FLAGS) -s ERROR_ON_UNDEFINED_SYMBOLS=0 -s SIDE_MODULE=$(USE_DYNAMIC_PLUGINS) -DVIDEO_HLE_ALLOWED=1" \
 		all
 
 clean-ui:
