@@ -282,12 +282,12 @@ $(NATIVE_BIN)/mupen64plus-audio-sdl.so: $(NATIVE_BIN) $(NATIVE_AUDIO_DIR)/mupen6
 
 ifeq ($(config), debug)
 
-OPT_LEVEL = -O0
-DEBUG_LEVEL = -g2
+OPT_LEVEL = -O1 --profiling -g3 -s ASSERTIONS=1 #-Oz -s AGGRESSIVE_VARIABLE_ELIMINATION=1 -fsanitize=undefined -Wcast-align -Wover-aligned -s WARN_UNALIGNED=1
+DEBUG_LEVEL = -g2 
 
 else
 
-OPT_LEVEL = -O3 --profiling -g3 # -g3 -Oz -s ASSERTIONS=1 -s AGGRESSIVE_VARIABLE_ELIMINATION=1 -fsanitize=undefined -Wcast-align -Wover-aligned -s WARN_UNALIGNED=1 #-s AGGRESSIVE_VARIABLE_ELIMINATION=1
+OPT_LEVEL = -O3 -s AGGRESSIVE_VARIABLE_ELIMINATION=1
 
 endif
 
