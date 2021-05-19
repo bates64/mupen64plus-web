@@ -289,6 +289,7 @@ else
 
 OPT_LEVEL = -O3 -s AGGRESSIVE_VARIABLE_ELIMINATION=1
 
+//'release' = -03 -s AGGRESSIVE_VARIABLE_ELIMINATION=1
 endif
 
 
@@ -466,7 +467,7 @@ $(BIN_DIR)/$(TARGET_JS): $(INDEX_TEMPLATE) $(PLUGINS) $(STATIC_PLUGINS) $(INPUT_
 			-s ENVIRONMENT='web' -s EXPORT_ES6=0 \
 			-s NO_EXIT_RUNTIME=1 -s USE_ZLIB=1 \
 			-s USE_SDL=2 -s USE_LIBPNG=1 -s FULL_ES2=1 \
-			-s ASYNCIFY=1 -s 'ASYNCIFY_IMPORTS=[\"waitForReliableMessage\",\"checkForUnreliableMessages\"]' \
+			-s ASYNCIFY=1 -s 'ASYNCIFY_IMPORTS=[\"waitForReliableMessage\",\"waitForUnreliableMessages\"]' \
 			-s USE_BOOST_HEADERS=1 \
 			-DEMSCRIPTEN=1 --pre-js $(PRE_JS) --post-js $(POST_JS) \
 			-DINPUT_ROM=$(DEFAULT_ROM) $(EMRUN)" \
