@@ -3,20 +3,11 @@
 # to build native version: 'make native'
 # to run web version: 'make run-web'
 # to run native version: 'make run-native'
-# to specify a rom to load, make sure it's in the ROMS_DIR and load as:
-# make ROM="rom.name.n64" run-web
 
 GAMES_DIR ?= ./games
-ROM_DIR_NAME ?= roms
-ROMS_DIR ?= $(abspath $(ROM_DIR_NAME))
-ROM ?= super_mario_64.z64
-DEFAULT_ROM := super_mario_64.z64
 PLATFORM ?= web
 BIN_DIR ?= $(abspath ./bin/$(PLATFORM))
 SCRIPTS_DIR := ./scripts
-
-TARGET_ROM = $(BIN_DIR)/roms/$(ROM)
-SOURCE_ROM = $(ROMS_DIR)/$(ROM)
 
 POSTFIX ?= -web
 SO_EXTENSION ?= .so
@@ -69,7 +60,6 @@ RSP_LIB_STATIC = $(RSP_DIR)/$(RSP)$(POSTFIX).a
 
 TARGET ?= mupen64plus
 PLUGINS_DIR = $(BIN_DIR)/plugins
-OUTPUT_ROMS_DIR = $(BIN_DIR)/$(ROMS_DIR)
 TARGET_LIB = $(TARGET)$(POSTFIX)$(SO_EXTENSION)
 TARGET_JS ?= index.js
 INDEX_TEMPLATE = $(abspath $(SCRIPTS_DIR)/index.template.html)
@@ -168,7 +158,7 @@ NATIVE_PLUGINS := \
 NATIVE_EXE := $(NATIVE_BIN)/mupen64plus
 NATIVE_DEPS := $(NATIVE_PLUGINS) $(NATIVE_EXE)
 
-WEB_DEPS := $(BIN_DIR)/$(TARGET_JS) $(TARGET_ROM)
+WEB_DEPS := $(BIN_DIR)/$(TARGET_JS)
 
 ALL_DEPS := $(WEB_DEPS)
 ifeq ($(PLATFORM), native)
@@ -199,12 +189,11 @@ CFG_DIR := $(RICE_CFG_DIR)
 NATIVE_ARGS ?=
 
 run-native: native
-	./$(NATIVE_EXE) $(ROM) \
+	./$(NATIVE_EXE) \
 			$(NATIVE_ARGS) \
 			--corelib $(NATIVE_BIN)/libmupen64plus.so.2 \
 			--configdir $(CFG_DIR) \
-			--datadir $(CFG_DIR) \
-			$(ROMS_DIR)/$(ROM)
+			--datadir $(CFG_DIR)
 
 
 # use browser=chromium arg (or chrome etc) to test in broser
@@ -215,9 +204,8 @@ ifeq ($(browser), chromium)
 endif
 EMRUN ?= #--emrun
 
-FORWARDSLASH ?= %2F
 run-web: web
-	emrun $ --browser $(BROWSER) $(BIN_DIR)/index.html --nospeedlimit  $(FORWARDSLASH)$(ROM_DIR_NAME)$(FORWARDSLASH)$(ROM)
+	emrun $ --browser $(BROWSER) $(BIN_DIR)/index.html --nospeedlimit
 
 run: run-web
 
@@ -362,11 +350,6 @@ $(PLUGINS_DIR)/$(RSP_LIB) : $(RSP_DIR)/$(RSP_LIB_JS)
 
 $(RSP_LIB_STATIC) : $(RSP_DIR)/$(RSP_LIB_JS)
 
-$(TARGET_ROM): $(SOURCE_ROM)
-	mkdir -p $(@D)
-	rm -f $(OUTPUT_ROMS_DIR)/*
-	cp "$<" "$@"
-
 $(BIN_DIR) :
 	#Creating output directory
 	mkdir -p $(BIN_DIR)
@@ -469,8 +452,7 @@ $(BIN_DIR)/$(TARGET_JS): $(INDEX_TEMPLATE) $(PLUGINS) $(STATIC_PLUGINS) $(INPUT_
 			-s USE_SDL=2 -s USE_LIBPNG=1 -s FULL_ES2=1 \
 			-s ASYNCIFY=1 -s 'ASYNCIFY_IMPORTS=[\"waitForReliableMessage\",\"waitForUnreliableMessages\"]' \
 			-s USE_BOOST_HEADERS=1 \
-			-DEMSCRIPTEN=1 --pre-js $(PRE_JS) --post-js $(POST_JS) \
-			-DINPUT_ROM=$(DEFAULT_ROM) $(EMRUN)" \
+			-DEMSCRIPTEN=1 --pre-js $(PRE_JS) --post-js $(POST_JS)" \
 			all
 
 core: $(CORE_DIR)/$(CORE_LIB)
@@ -579,7 +561,7 @@ $(INPUT_DIR)/$(INPUT_LIB_JS): $(CORE_LIB_STATIC)
 		GLU_CFLAGS="" \
 		V=1 \
 		LDLIBS="" \
-		OPTFLAGS="$(OPT_FLAGS) -s ERROR_ON_UNDEFINED_SYMBOLS=0 -s SIDE_MODULE=$(USE_DYNAMIC_PLUGINS)"\
+		OPTFLAGS="$(OPT_FLAGS) -s ERROR_ON_UNDEFINED_SYMBOLS=0 -s SIDE_MODULE=$(USE_DYNAMIC_PLUGINS)" \
 		all
 
 rsp: $(RSP_DIR)/$(RSP_LIB)
