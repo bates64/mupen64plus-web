@@ -91,7 +91,6 @@ INPUT_FILES = \
 	$(BIN_DIR)/data/RiceVideoLinux.ini \
 	$(BIN_DIR)/stats.min.js \
 	$(BIN_DIR)/main.js \
-	$(BIN_DIR)/data/mupencheat.txt \
 	$(INDEX_TEMPLATE) \
 	$(BIN_DIR)/$(MODULE_JS) \
 	$(BIN_DIR)/data/mupen64plus.cfg \
