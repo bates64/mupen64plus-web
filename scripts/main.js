@@ -13,23 +13,51 @@ import baseModule from './module';
  * - fileData should be an arraybuffer containing the file data.
  */
 const putSaveFile = function(fileName, fileData) {
-  
-  const connection = indexedDB.open('/mupen64plus');
 
-  connection.onsuccess = (e) => {
-    const db = e.target.result;
-    const transaction = db.transaction('FILE_DATA', 'readwrite');
-    const store = transaction.objectStore('FILE_DATA');
+  return new Promise(function(resolve, reject) {
+    
+    const connection = indexedDB.open('/mupen64plus');
+    
+    connection.onupgradeneeded = function(e) {
+      var db = e.target.result;
 
-    const toSave = {
-      contents: new Int8Array(fileData),
-      timestamp: new Date(Date.now()),
-      mode: 33206 // whatever this means
-    };
+      if (!db.objectStoreNames.contains('FILE_DATA')) {
+        const objectStore = db.createObjectStore('FILE_DATA');
+        objectStore.createIndex('timestamp', 'timestamp', { unique: false, multiEntry: false });
 
-    const savePath = '/mupen64plus/saves/' + fileName;
-    store.put(toSave, savePath);
-  }
+        // Create savefile folder
+        objectStore.add({
+          timestamp: new Date(Date.now()),
+          mode: 16832
+        }, "/mupen64plus/saves");
+      }
+    }
+    
+    connection.onsuccess = (e) => {
+      const db = e.target.result;
+      const transaction = db.transaction('FILE_DATA', 'readwrite');
+      const store = transaction.objectStore('FILE_DATA');
+
+      const toSave = {
+        contents: new Int8Array(fileData),
+        timestamp: new Date(Date.now()),
+        mode: 33206 // whatever this means
+      };
+
+      const savePath = '/mupen64plus/saves/' + fileName;
+      const request = store.put(toSave, savePath);
+
+      request.onerror = function(event) {
+        console.error("Error while udpating IDBFS store: %o", event);
+        reject(event);
+      }
+      
+      request.onsuccess = function(event) {
+        resolve();
+      }
+    }
+
+  });
 }
 
 const createMupen64PlusWeb = function(extraModuleArgs) {
