@@ -1,8 +1,13 @@
 
 declare module 'mupen64plus-web' {
 
+  export interface FileEntry {
+    fileKey: string,
+    contents: Int8Array
+  }
   export default function createMupen64PlusWeb({ }: any);
   export function putSaveFile(fileName: string, fileData: ArrayBuffer): Promise<void>;
+  export function getAllSaveFiles(): Promise<FileEntry[]>;
 }
 
 
