@@ -1,4 +1,4 @@
-import createModule from './index';
+// The correct import for createModule will be injected during the build process
 import baseModule from './module';
 
 /*

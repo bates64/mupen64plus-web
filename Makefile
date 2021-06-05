@@ -4,6 +4,8 @@
 # to run web version: 'make run-web'
 # to run native version: 'make run-native'
 
+GIT_COMMIT = $(shell git rev-parse --short=10 HEAD)
+
 GAMES_DIR ?= ./games
 PLATFORM ?= web
 BIN_DIR ?= $(abspath ./bin/$(PLATFORM))
@@ -61,7 +63,7 @@ RSP_LIB_STATIC = $(RSP_DIR)/$(RSP)$(POSTFIX).a
 TARGET ?= mupen64plus
 PLUGINS_DIR = $(BIN_DIR)/plugins
 TARGET_LIB = $(TARGET)$(POSTFIX)$(SO_EXTENSION)
-TARGET_JS ?= index.js
+TARGET_JS ?= index.$(GIT_COMMIT).js
 INDEX_TEMPLATE = $(abspath $(SCRIPTS_DIR)/index.template.html)
 PRE_JS = $(abspath $(SCRIPTS_DIR)/prefix.js)
 POST_JS = $(abspath $(SCRIPTS_DIR)/postfix.js)
@@ -87,7 +89,6 @@ PLUGINS =  $(PLUGINS_DIR)/$(CORE_LIB) \
 
 INPUT_FILES = \
 	$(BIN_DIR)/data/InputAutoCfg.ini \
-	$(BIN_DIR)/data/Glide64mk2.ini \
 	$(BIN_DIR)/data/RiceVideoLinux.ini \
 	$(BIN_DIR)/stats.min.js \
 	$(BIN_DIR)/main.js \
@@ -95,6 +96,7 @@ INPUT_FILES = \
 	$(BIN_DIR)/$(MODULE_JS) \
 	$(BIN_DIR)/data/mupen64plus.cfg \
 	$(BIN_DIR)/data/mupen64plus.ini \
+	# $(BIN_DIR)/data/Glide64mk2.ini \
 
 
 define EXPORTED_FUNCTIONS
@@ -159,12 +161,12 @@ NATIVE_DEPS := $(NATIVE_PLUGINS) $(NATIVE_EXE)
 
 WEB_DEPS := $(BIN_DIR)/$(TARGET_JS)
 
-ALL_DEPS := $(WEB_DEPS)
+ALL_DEPS := $(WEB_DEPS) 
 ifeq ($(PLATFORM), native)
 		ALL_DEPS := $(NATIVE_DEPS)
 endif
 
-all: $(ALL_DEPS)
+all: $(ALL_DEPS) 
 
 .FORCE:
 
@@ -402,6 +404,7 @@ $(BIN_DIR)/stats.min.js: $(SCRIPTS_DIR)/stats.min.js
 
 $(BIN_DIR)/main.js: $(SCRIPTS_DIR)/main.js
 	cp $< $@
+	sed -i '1s/^/import createModule from "\.\/$(TARGET_JS)"\n/' $(BIN_DIR)/main.js
 
 $(BIN_DIR)/data/mupen64plus.cfg: $(CFG_DIR)/mupen64plus-web.cfg
 	cp $< $@
@@ -417,7 +420,7 @@ $(BIN_DIR)/$(TARGET_JS): $(INDEX_TEMPLATE) $(PLUGINS) $(STATIC_PLUGINS) $(INPUT_
 	rm -f $@
 	# building UI (program entry point)
 	cd $(UI_DIR) && \
-		EMCC_FORCE_STDLIBS="libc++,libc" emmake make \
+	 	emmake make \
 			POSTFIX=-web \
 			TARGET=$(BIN_DIR)/$(TARGET_JS) \
 			UNAME=Linux \
