@@ -40,6 +40,9 @@ var Module = {
       console.error(text);
     }
   },
+  setErrorStatus: function(message) {
+    console.log("Module.setErrorStatus: %o", message);
+  },
   setStatus: function(text) {
     /*
     if (!Module.setStatus.last) Module.setStatus.last = { time: Date.now(), text: '' };
@@ -107,14 +110,6 @@ var Module = {
     xhr.open("GET", url, true);
     xhr.send();
   }
-};
-Module.setStatus('Downloading...');
-window.onerror = function(event) {
-  // TODO: do not warn on ok events like simulating an infinite loop or exitStatus
-  Module.setStatus('Exception thrown, see JavaScript console');
-  Module.setStatus = function(text) {
-    if (text) Module.printErr('[post-exception status] ' + text);
-  };
 };
 
 export default Module;

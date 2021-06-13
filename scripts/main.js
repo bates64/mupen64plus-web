@@ -149,8 +149,14 @@ const createMupen64PlusWeb = function(extraModuleArgs) {
   // See http://www.khronos.org/registry/webgl/specs/latest/1.0/#5.15.2
   m.canvas.addEventListener("webglcontextlost", function(e) { alert('WebGL context lost. You will need to reload the page.'); e.preventDefault(); }, false);
 
-  console.log("createModule: %o", createModule);
-  
+  console.log("module: %o", m);
+
+  window.onerror = function(event) {
+    // TODO: do not warn on ok events like simulating an infinite loop or exitStatus
+    console.error('Exception thrown: ', event);
+    m.setErrorStatus(event);
+  };
+
   return createModule(m);
 }
 
