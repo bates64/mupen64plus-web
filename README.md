@@ -1,5 +1,5 @@
 # mupen64plus-web
-Emscripten based web port of Mupen64plus N64 Emulator
+Fork of [johnoneil's Emscripten based web port of Mupen64plus N64 Emulator](https://github.com/johnoneil/mupen64plus-web), with additional changes from [jquesnelle's fork](https://github.com/jquesnelle/mupen64plus-ui-console/tree/emscripten) as well to statically link the different modules. Complete with Netplay Support.
 
 ![demo image of mupen64plus in browser](https://raw.githubusercontent.com/johnoneil/mupen64plus-web/master/img/Screenshot%20from%202015-12-19%2016%3A02%3A03.png)
 
@@ -7,19 +7,64 @@ Emscripten based web port of Mupen64plus N64 Emulator
 If you have the Emscripten SDK installed (https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html) you should be able to build via:
 * ```make config=release```
 
-Other roms can be build into web versions by placing the rom in the ```roms``` directory and running make as follows:
-* ```make config=release INPUT_ROM=romname.z64```
-
 Debug build config is also available (i.e. ```make config=debug ...```
 
-# Running
-Buiilding as above will use the demo game rom in the ```roms``` directory to generate javascript and html for a playable game in the ```games`` directory.
-Serve this directory via a web server, and open in a webgl enabled browser to play.
+This project is known to build well emscripten 2.0.16.
+
+# Usage
+
+This project is built as an ES6 module, and should one day be publicly available in npm. Until then it will have to be built manually and added to your package.json with the path to the directory the build is in.
+
+```
+import createMupen64PlusWeb from 'mupen64plus-web';
+
+createMupen64PlusWeb({
+
+  // REQUIRED: This canvas' id has to be 'canvas' for... reasons
+  canvas: document.getElementById('canvas'),
+
+  // REQUIRED: An arraybuffer containing the rom data
+  romData: uiState.selectedRomData,
+
+  // OPTIONAL: These get called roughly before and after each frame
+  beginStats: () => {},
+  endStats: () => {},
+
+  // OPTIONAL
+  coreConfig: {
+    emuMode: 0 // 0=pure-interpretter (default)(seems to be more stable), 1=cached
+  },
+
+  // OPTIONAL
+  netplayConfig: {
+    player: 1, // The player (1-4) that we would like to control
+    reliableChannel: myChannel, // websocket-like object that can send and receive the 'tcp' messages described [here](https://mupen64plus.org/wiki/index.php?title=Mupen64Plus_v2.0_Core_Netplay_Protocol)
+    unreliableChannel: myChannel2, // websocket-like object that can send and receive the 'udp' messages described [here](https://mupen64plus.org/wiki/index.php?title=Mupen64Plus_v2.0_Core_Netplay_Protocol)
+  },
+
+  // OPTIONAL - Can be used to point to files that the emulator needs if they are moved for whatever reason
+  locateFile: (path: string, prefix: string) => {
+
+    const publicURL = process.env.PUBLIC_URL;
+
+    if (path.endsWith('.wasm') || path.endsWith('.data')) {
+      return publicURL + "/dist/" + path;
+    }
+
+    return prefix + path;
+  },
+
+  // OPTIONAL - Can be used to get notifications for uncaught exceptions
+  setErrorStatus: (errorMessage: string) => {
+    console.log("errorMessage: %s", errorMessage);
+  }
+});
+
+```
+
+
 
 # Status
-* Build scripts and project setup still primitive. Needs a new "UI" type module specifically for the web (not a port of the command line version).
-* Recently made some changes which turned on the cached interpreter, greatly improving framerate. It's possible the dynamic recompiler may improve it further, but the demo rom now runs at solid 60 FPS in the browser. Most games seem to do a solid 30 FPS, which may be fine.
-* Sound is still not optimal. Firefox and Chrome sound has both buffer underruns (at low framerates) and overruns (at high frame rates). Still for some games like SuperMario64 and Ocarina of time the sound is fairly good.
-* Glade Mk2 plugin has z-fighting and performance issues. The newer port of the rice plugin seems to work better, but does not support quite as many games.
+* Glide64mk2 plugin builds(?) but doesn't work correctly. Rice is the only working video plugin currently
+* Some games have issues where the textures seem to draw in the wrong order
 
-Still, in the light of those issues listed above I'm very pleased at how well many games play.
