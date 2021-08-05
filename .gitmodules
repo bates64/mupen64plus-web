@@ -3,7 +3,7 @@
 	url = git@github.com:cheinr/mupen64plus-core-web-netplay.git
 [submodule "mupen64plus-video-glide64mk2"]
 	path = mupen64plus-video-glide64mk2
-	url = git@github.com:johnoneil/mupen64plus-video-glide64mk2.git
+	url = git@github.com:cheinr/mupen64plus-video-glide64mk2.git
 [submodule "mupen64plus-rsp-hle"]
 	path = mupen64plus-rsp-hle
 	url = git@github.com:cheinr/mupen64plus-rsp-hle.git
