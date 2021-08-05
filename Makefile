@@ -444,7 +444,6 @@ $(BIN_DIR)/$(TARGET_JS): $(INDEX_TEMPLATE) $(PLUGINS) $(STATIC_PLUGINS) $(INPUT_
 			--use-preload-plugins -lidbfs.js \
 			--preload-file $(BIN_DIR)/data@data \
 			--shell-file $(INDEX_TEMPLATE) \
-			--js-library ../../../mupen64plus-audio-web/src/jslib/audiolib.js \
 			--js-library ../../../mupen64plus-core-web-netplay/src/jslib/corelib.js \
 			-s INITIAL_MEMORY=$(MEMORY) \
 			-s \"EXPORTED_FUNCTIONS=[$(EXPORTED_FUNCTIONS)]\" \
