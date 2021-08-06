@@ -1,6 +1,6 @@
 [submodule "mupen64plus-core-web-netplay"]
 	path = mupen64plus-core-web-netplay
-	url = git@github.com:cheinr/mupen64plus-core-web-netplay.git
+	url = git@github.com:cheinr/mupen64plus-core.git
 [submodule "mupen64plus-video-glide64mk2"]
 	path = mupen64plus-video-glide64mk2
 	url = git@github.com:cheinr/mupen64plus-video-glide64mk2.git
@@ -12,16 +12,16 @@
 	url = git@github.com:cheinr/mupen64plus-audio-sdl.git
 [submodule "mupen64plus-input-sdl-web-netplay"]
 	path = mupen64plus-input-sdl-web-netplay
-	url = git@github.com:cheinr/mupen64plus-input-sdl-web-netplay.git
+	url = git@github.com:cheinr/mupen64plus-input-sdl.git
 [submodule "mupen64plus-ui-console-web-netplay"]
 	path = mupen64plus-ui-console-web-netplay
-	url = git@github.com:cheinr/mupen64plus-ui-console-web-netplay.git
+	url = git@github.com:cheinr/mupen64plus-ui-console.git
 [submodule "mupen64plus-input-sdl"]
 	path = mupen64plus-input-sdl
 	url = git@github.com:cheinr/mupen64plus-input-sdl.git
 [submodule "mupen64plus-video-rice-web-netplay"]
 	path = mupen64plus-video-rice-web-netplay
-	url = git@github.com:cheinr/mupen64plus-video-rice-web-netplay.git
+	url = git@github.com:cheinr/mupen64plus-video-rice.git
 [submodule "deps/libsamplerate"]
 	path = deps/libsamplerate
 	url = git@github.com:cheinr/libsamplerate.git
