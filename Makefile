@@ -98,46 +98,6 @@ INPUT_FILES = \
 	$(BIN_DIR)/data/mupen64plus.ini \
 	# $(BIN_DIR)/data/Glide64mk2.ini \
 
-
-define EXPORTED_FUNCTIONS
-'_AiLenChanged', \
-'_ChangeWindow', \
-'_ControllerCommand', \
-'_DoRspCycles', \
-'_InitiateAudio', \
-'_InitiateGFX', \
-'_InitiateRSP', \
-'_PluginGetVersionAudio', \
-'_PluginGetVersionInput', \
-'_PluginGetVersionRSP', \
-'_PluginGetVersionVideo', \
-'_ProcessAList', \
-'_ProcessDList', \
-'_ProcessRDPList', \
-'_ReadController', \
-'_ReadScreen2', \
-'_ResizeVideoOutput', \
-'_RomClosedAudio', \
-'_RomClosedInput', \
-'_RomClosedVideo', \
-'_RomOpenAudio', \
-'_RomOpenInput', \
-'_RomOpenVideo', \
-'_SDL_KeyDown', \
-'_SDL_KeyUp', \
-'_SetSpeedFactor', \
-'_ShowCFB', \
-'_UpdateScreen', \
-'_ViStatusChanged', \
-'_ViWidthChanged', \
-'_VolumeDown', \
-'_VolumeGetString', \
-'_VolumeMute', \
-'_VolumeUp', \
-'_main'
-endef
-
-
 OPT_LEVEL ?= -O2
 DEBUG_LEVEL ?=
 
@@ -446,7 +406,6 @@ $(BIN_DIR)/$(TARGET_JS): $(INDEX_TEMPLATE) $(PLUGINS) $(STATIC_PLUGINS) $(INPUT_
 			--shell-file $(INDEX_TEMPLATE) \
 			--js-library ../../../mupen64plus-core-web-netplay/src/jslib/corelib.js \
 			-s INITIAL_MEMORY=$(MEMORY) \
-			-s \"EXPORTED_FUNCTIONS=[$(EXPORTED_FUNCTIONS)]\" \
 			-s DEMANGLE_SUPPORT=1 -s MODULARIZE=1 -s EXPORT_NAME=\"createModule\" \
 			-s ENVIRONMENT='web' -s EXPORT_ES6=0 \
 			-s NO_EXIT_RUNTIME=1 -s USE_ZLIB=1 \
