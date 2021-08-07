@@ -9,8 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "foo"
+    "url": "https://github.com/cheinr/mupen64plus-web"
   },
-  "author": "",
   "license": "GPL-2.0"
 }
