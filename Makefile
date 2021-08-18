@@ -140,12 +140,11 @@ RICE_CFG_DIR := cfg/rice
 GLIDE_CFG_DIR := cfg/glide
 DATA_DIR := mupen64plus-core-web-data/data
 
-CFG_DIR := $(GLIDE_CFG_DIR)
-ifndef rice
-	CFG_DIR := $(RICE_CFG_DIR)
-endif
-
 CFG_DIR := $(RICE_CFG_DIR)
+
+#ifdef glide
+#	CFG_DIR := $(GLIDE_CFG_DIR)
+#endif
 
 NATIVE_ARGS ?=
 
@@ -231,7 +230,7 @@ $(NATIVE_BIN)/mupen64plus-audio-sdl.so: $(NATIVE_BIN) $(NATIVE_AUDIO_DIR)/mupen6
 
 ifeq ($(config), debug)
 
-OPT_LEVEL = -O1 --profiling -g3 -s ASSERTIONS=1 #-Oz -s AGGRESSIVE_VARIABLE_ELIMINATION=1 -fsanitize=undefined -Wcast-align -Wover-aligned -s WARN_UNALIGNED=1
+OPT_LEVEL = -O3 --profiling -g3 -s ASSERTIONS=1 #-Oz -s AGGRESSIVE_VARIABLE_ELIMINATION=1 -fsanitize=undefined -Wcast-align -Wover-aligned -s WARN_UNALIGNED=1
 DEBUG_LEVEL = -g2 
 
 else
@@ -339,7 +338,7 @@ $(RICE_VIDEO_DIR)/$(RICE_VIDEO_LIB_JS):
 			V=1 \
 			LOADLIBES="" \
 			LDLIBS="$(CORE_LD_LIB)" \
-			OPTFLAGS="$(OPT_FLAGS) -s ERROR_ON_UNDEFINED_SYMBOLS=0 -s SIDE_MODULE=$(USE_DYNAMIC_PLUGINS) -s FULL_ES2=1 -DNO_FILTER_THREAD=1"\
+			OPTFLAGS="$(OPT_FLAGS) -s ERROR_ON_UNDEFINED_SYMBOLS=0 -s SIDE_MODULE=$(USE_DYNAMIC_PLUGINS) -s FULL_ES3=1 -DNO_FILTER_THREAD=1"\
 			all
 
 # input files helpers
@@ -409,7 +408,7 @@ $(BIN_DIR)/$(TARGET_JS): $(INDEX_TEMPLATE) $(PLUGINS) $(STATIC_PLUGINS) $(INPUT_
 			-s DEMANGLE_SUPPORT=1 -s MODULARIZE=1 -s EXPORT_NAME=\"createModule\" \
 			-s ENVIRONMENT='web' -s EXPORT_ES6=0 \
 			-s NO_EXIT_RUNTIME=1 -s USE_ZLIB=1 \
-			-s USE_SDL=2 -s USE_LIBPNG=1 -s FULL_ES2=1 \
+			-s USE_SDL=2 -s USE_LIBPNG=1 -s FULL_ES3=1 \
 			-s ASYNCIFY=1 -s 'ASYNCIFY_IMPORTS=[\"waitForReliableMessage\",\"waitForUnreliableMessages\"]' \
 			-s USE_BOOST_HEADERS=1 \
 			-DEMSCRIPTEN=1 --pre-js $(PRE_JS) --post-js $(POST_JS)" \
@@ -495,7 +494,7 @@ $(VIDEO_DIR)/$(VIDEO_LIB_JS):
 		V=1 \
 		LOADLIBES="" \
 		LDLIBS="$(CORE_LD_LIB)" \
-		OPTFLAGS="$(OPT_FLAGS) -s SIDE_MODULE=$(USE_DYNAMIC_PLUGINS) -s FULL_ES2=1 -DNO_FILTER_THREAD=1 -s USE_BOOST_HEADERS=1" \
+		OPTFLAGS="$(OPT_FLAGS) -s SIDE_MODULE=$(USE_DYNAMIC_PLUGINS) -s FULL_ES3=1 -DNO_FILTER_THREAD=1 -s USE_BOOST_HEADERS=1" \
 		all
 
 input: $(INPUT_DIR)/$(INPUT_LIB)
@@ -578,12 +577,9 @@ clean-web:
 	rm -fr $(UI_DIR)/_obj$(POSTFIX)
 
 clean-video:
-	rm -fr $(BIN_DIR)
-	rm -f $(VIDEO_DIR)/$(VIDEO_LIB)
-	rm -f $(VIDEO_DIR)/$(VIDEO_LIB_JS)
-	rm -fr $(VIDEO_DIR)/_obj$(POSTFIX)
-	rm -f $(RICE_VIDEO_DIR)/$(RICE_VIDEO_LIB)
-	rm -f $(RICE_VIDEO_DIR)/$(RICE_VIDEO_LIB_JS)
-	rm -fr $(RICE_VIDEO_DIR)/_obj$(POSTFIX)
 	rm -f $(RICE_VIDEO_LIB_STATIC)
-	rm -fr $(UI_DIR)/_obj$(POSTFIX)
+	rm -f $(RICE_VIDEO_DIR)/$(RICE_VIDEO_LIB_JS)
+
+clean-audio:
+	rm $(AUDIO_LIB_STATIC)
+	rm $(AUDIO_DIR)/$(AUDIO_LIB_JS)
