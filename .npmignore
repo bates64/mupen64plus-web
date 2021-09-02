@@ -29,7 +29,6 @@
 
 /games
 /roms/*
-/bin
 
 # web audio plugin
 mupen64plus-audio-web/projects/unix/_obj-web
