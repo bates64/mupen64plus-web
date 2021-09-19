@@ -1,3 +1,4 @@
+import { findAutoInputConfig } from './gamepad-utils';
 
 var Module = {
   preRun: [],
@@ -13,6 +14,8 @@ var Module = {
     // Also need to provide: 'reliableChannel' and 'unreliableChannel'
   },
 
+  findAutoInputConfig,
+  
   // end mupen64plus config
   
   print: (function() {

@@ -1,5 +1,6 @@
 // The correct import for createModule will be injected during the build process
 import baseModule from './module';
+import { findAutoInputConfig, writeAutoInputConfig } from './gamepad-utils';
 
 /*
  * Saves the specified file to the IndexedDB store where 
@@ -32,8 +33,9 @@ const putSaveFile = function(fileName, fileData) {
         }, "/mupen64plus/saves");
       }
     }
-    
+
     connection.onsuccess = (e) => {
+
       const db = e.target.result;
       const transaction = db.transaction('FILE_DATA', 'readwrite');
       const store = transaction.objectStore('FILE_DATA');
@@ -61,12 +63,12 @@ const putSaveFile = function(fileName, fileData) {
 }
 
 const getFile = function(db, fileKey) {
-
+  
   return new Promise(function(resolve, reject) {
-    
-    const transaction = db.transaction('FILE_DATA', 'readwrite');
-    const store = transaction.objectStore('FILE_DATA');
 
+    const transaction = db.transaction('FILE_DATA', 'readonly');
+    const store = transaction.objectStore('FILE_DATA');
+    
     const request = store.get(fileKey);
 
     request.onerror = function(event) {
@@ -76,21 +78,45 @@ const getFile = function(db, fileKey) {
     
     request.onsuccess = function(event) {
       console.log(event);
-      resolve({ fileKey, contents: event.target.result.contents });
+
+      const contents = event.target.result
+                     ? event.target.result.contents
+                     : null;
+
+      resolve({ fileKey, contents });
+
     }
   });
 }
+
 
 const getAllSaveFiles = function() {
   return new Promise(function(resolve, reject) {
     
     const connection = indexedDB.open('/mupen64plus');
+
+    connection.onupgradeneeded = function(e) {
+      console.log("onupgradeneeded");
+      var db = e.target.result;
+
+      if (!db.objectStoreNames.contains('FILE_DATA')) {
+        const objectStore = db.createObjectStore('FILE_DATA');
+        objectStore.createIndex('timestamp', 'timestamp', { unique: false, multiEntry: false });
+
+        // Create savefile folder
+        objectStore.add({
+          timestamp: new Date(Date.now()),
+          mode: 16832
+        }, "/mupen64plus/saves");
+      }
+    }
     
     connection.onsuccess = (e) => {
       const db = e.target.result;
 
       if (!db.objectStoreNames.contains('FILE_DATA')) {
         resolve([]);
+        return;
       }
       
       const transaction = db.transaction('FILE_DATA', 'readwrite');
@@ -162,7 +188,9 @@ const createMupen64PlusWeb = function(extraModuleArgs) {
 
 export {
   putSaveFile,
-  getAllSaveFiles
+  getAllSaveFiles,
+  findAutoInputConfig,
+  writeAutoInputConfig
 }
 export default createMupen64PlusWeb;
 

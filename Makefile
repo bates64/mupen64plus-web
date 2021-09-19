@@ -92,6 +92,8 @@ INPUT_FILES = \
 	$(BIN_DIR)/data/RiceVideoLinux.ini \
 	$(BIN_DIR)/stats.min.js \
 	$(BIN_DIR)/main.js \
+	$(BIN_DIR)/gamepad-utils.js \
+	$(BIN_DIR)/idbfs-file-utils.js \
 	$(INDEX_TEMPLATE) \
 	$(BIN_DIR)/$(MODULE_JS) \
 	$(BIN_DIR)/data/mupen64plus.cfg \
@@ -361,6 +363,12 @@ $(BIN_DIR)/$(MODULE_JS): $(SCRIPTS_DIR)/$(MODULE_JS)
 $(BIN_DIR)/stats.min.js: $(SCRIPTS_DIR)/stats.min.js
 	cp $< $@
 
+$(BIN_DIR)/gamepad-utils.js: $(SCRIPTS_DIR)/gamepad-utils.js
+	cp $< $@
+
+$(BIN_DIR)/idbfs-file-utils.js: $(SCRIPTS_DIR)/idbfs-file-utils.js
+	cp $< $@
+
 $(BIN_DIR)/main.js: $(SCRIPTS_DIR)/main.js
 	cp $< $@
 	sed -i '1s/^/import createModule from "\.\/$(TARGET_JS)"\n/' $(BIN_DIR)/main.js
@@ -404,12 +412,13 @@ $(BIN_DIR)/$(TARGET_JS): $(INDEX_TEMPLATE) $(PLUGINS) $(STATIC_PLUGINS) $(INPUT_
 			--preload-file $(BIN_DIR)/data@data \
 			--shell-file $(INDEX_TEMPLATE) \
 			--js-library ../../../mupen64plus-core-web-netplay/src/jslib/corelib.js \
+			--js-library ../../../mupen64plus-input-sdl/src/jslib/input-lib.js \
 			-s INITIAL_MEMORY=$(MEMORY) \
 			-s DEMANGLE_SUPPORT=1 -s MODULARIZE=1 -s EXPORT_NAME=\"createModule\" \
 			-s ENVIRONMENT='web' -s EXPORT_ES6=0 \
 			-s NO_EXIT_RUNTIME=1 -s USE_ZLIB=1 \
 			-s USE_SDL=2 -s USE_LIBPNG=1 -s FULL_ES3=1 \
-			-s ASYNCIFY=1 -s 'ASYNCIFY_IMPORTS=[\"waitForReliableMessage\",\"waitForUnreliableMessages\"]' \
+			-s ASYNCIFY=1 -s 'ASYNCIFY_IMPORTS=[\"waitForReliableMessage\",\"waitForUnreliableMessages\",\"findAutoInputConfigName\"]' \
 			-s USE_BOOST_HEADERS=1 \
 			-DEMSCRIPTEN=1 --pre-js $(PRE_JS) --post-js $(POST_JS)" \
 			all
@@ -520,7 +529,7 @@ $(INPUT_DIR)/$(INPUT_LIB_JS): $(CORE_LIB_STATIC)
 		GLU_CFLAGS="" \
 		V=1 \
 		LDLIBS="" \
-		OPTFLAGS="$(OPT_FLAGS) -s ERROR_ON_UNDEFINED_SYMBOLS=0 -s SIDE_MODULE=$(USE_DYNAMIC_PLUGINS)" \
+		OPTFLAGS="$(OPT_FLAGS) -s ERROR_ON_UNDEFINED_SYMBOLS=0 -s SIDE_MODULE=$(USE_DYNAMIC_PLUGINS) -s ASYNCIFY=1 --js-library ../../../mupen64plus-input-sdl/src/jslib/input-lib.js" \
 		all
 
 rsp: $(RSP_DIR)/$(RSP_LIB)
@@ -549,6 +558,8 @@ clean-ui:
 	rm -rf $(UI_DIR)/_obj$(POSTFIX)
 	rm -f $(BIN_DIR)/index.*
 	rm -f $(BIN_DIR)/main.js
+	rm -f $(BIN_DIR)/gamepad-utils.js
+	rm -f $(BIN_DIR)/idbfs-file-utils.js
 
 clean-web:
 	rm -fr $(BIN_DIR)
