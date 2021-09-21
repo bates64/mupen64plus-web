@@ -1,4 +1,4 @@
-const onUpgradeNeeded = function(e) {
+const onUpgradeNeeded = function(event) {
   var db = event.target.result;
 
   if (!db.objectStoreNames.contains('FILE_DATA')) {
@@ -9,14 +9,11 @@ const onUpgradeNeeded = function(e) {
       timestamp: new Date(Date.now()),
       mode: 16832
     }, "/mupen64plus/saves");
+
     objectStore.add({
       timestamp: new Date(Date.now()),
       mode: 16832
     }, "/mupen64plus/data");
-
-    objectStore.transaction.oncomplete = function(event) {
-      console.log("createObjectStore complete");          
-    }
   }
 }
 
@@ -47,14 +44,13 @@ export const getFile = function(fileKey) {
       }
       
       request.onsuccess = function(event) {
-        console.log(event);
+        //console.log(event); <- this bit cost me a weekend
 
         const contents = event.target.result
                        ? event.target.result.contents
                        : null;
 
         resolve({ fileKey, contents });
-
       }
     }
   });
@@ -65,10 +61,10 @@ export const putFile = function(fileKey, data) {
   return new Promise(function(resolve, reject) {
 
     const connection = indexedDB.open('/mupen64plus');
-    
+
     connection.onupgradeneeded = onUpgradeNeeded;
-    
-    connection.onerror = (event) => {
+
+    connection.onerror = function(event) {
       console.error("Error while updating IDBFS store: %o", event);
       reject(event);
     }
@@ -92,7 +88,7 @@ export const putFile = function(fileKey, data) {
       }
       
       request.onsuccess = function(event) {
-        console.log(event);
+        //console.log(event); <- this bit cost me a weekend
 
         const contents = event.target.result
                        ? event.target.result.contents

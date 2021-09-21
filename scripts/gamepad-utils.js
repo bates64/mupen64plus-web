@@ -1,72 +1,61 @@
 import { getFile, putFile } from './idbfs-file-utils';
 
 export function findAutoInputConfig(joystickName) {
-  return new Promise(function(resolve, reject) {
-      return getFile('/mupen64plus/data/InputAutoCfg.ini').then((result) => {
-        
-        if (!result.contents) {
-          resolve(null);
-        } else {
-          
-          const text = new TextDecoder().decode(result.contents);
-          
-          const match = findBestMatch(text, joystickName);
-          
-          const matchedConfig = parseConfigAtLine(text, match.lineNumber);
-          
-          resolve({ matchName: match.name, matchScore: match.joyFoundScore, config: matchedConfig});
-        }
-      }).catch((err) => {
-        reject(err);
-      });
+  return getFile('/mupen64plus/data/InputAutoCfg.ini').then((result) => {
+    
+    if (!result.contents) {
+      return null;
+    } else {
+      
+      const text = new TextDecoder().decode(result.contents);
+      
+      const match = findBestMatch(text, joystickName);
+      
+      const matchedConfig = parseConfigAtLine(text, match.lineNumber);
+      
+      return { matchName: match.name, matchScore: match.joyFoundScore, config: matchedConfig};
+    }
   });
 }
 
 export function writeAutoInputConfig(name, config) {
-  return new Promise(function(resolve, reject) {
-      return getFile('/mupen64plus/data/InputAutoCfg.ini').then((result) => {
+  return getFile('/mupen64plus/data/InputAutoCfg.ini').then((result) => {
+    
+    let text;
+    if (result.contents) {
+      text = new TextDecoder().decode(result.contents);
+    } else {
 
-        let text;
-        if (result.contents) {
-          text = new TextDecoder().decode(result.contents);
-        } else {
+      // TODO 
+      text = "\n"
+           + "[Keyboard]\n"
+           + "plugged = True\n"
+           + "plugin = 2\n"
+           + "mouse = False\n"
+           + "DPad R = key(100)\n"
+           + "DPad L = key(97)\n"
+           + "DPad D = key(115)\n"
+           + "DPad U = key(119)\n"
+           + "Start = key(13)\n"
+           + "Z Trig = key(122)\n"
+           + "B Button = key(306)\n"
+           + "A Button = key(304)\n"
+           + "C Button R = key(108)\n"
+           + "C Button L = key(106)\n"
+           + "C Button D = key(107)\n"
+           + "C Button U = key(105)\n"
+           + "R Trig = key(99)\n"
+           + "L Trig = key(120)\n"
+           + "Mempak switch = key(44)\n"
+           + "Rumblepak switch = key(46)\n"
+           + "X Axis = key(276,275)\n"
+           + "Y Axis = key(273,274)\n"
+           + "\n";
+    }
 
-          // TODO 
-          text = "\n"
-               + "[Keyboard]\n"
-               + "plugged = True\n"
-               + "plugin = 2\n"
-               + "mouse = False\n"
-               + "DPad R = key(100)\n"
-               + "DPad L = key(97)\n"
-               + "DPad D = key(115)\n"
-               + "DPad U = key(119)\n"
-               + "Start = key(13)\n"
-               + "Z Trig = key(122)\n"
-               + "B Button = key(306)\n"
-               + "A Button = key(304)\n"
-               + "C Button R = key(108)\n"
-               + "C Button L = key(106)\n"
-               + "C Button D = key(107)\n"
-               + "C Button U = key(105)\n"
-               + "R Trig = key(99)\n"
-               + "L Trig = key(120)\n"
-               + "Mempak switch = key(44)\n"
-               + "Rumblepak switch = key(46)\n"
-               + "X Axis = key(276,275)\n"
-               + "Y Axis = key(273,274)\n"
-               + "\n";
-        }
+    text = updateAutoInputConfig(text, name, config);
 
-        text = updateAutoInputConfig(text, name, config);
-
-        return putFile('/mupen64plus/data/InputAutoCfg.ini',  new TextEncoder().encode(text))
-          .then(() => {
-            resolve();
-          });
-      }).catch((err) => {
-        reject(err);
-      });
+    return putFile('/mupen64plus/data/InputAutoCfg.ini',  new TextEncoder().encode(text));
   });
 }
 
