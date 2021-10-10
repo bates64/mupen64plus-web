@@ -5,6 +5,7 @@
 # to run native version: 'make run-native'
 
 GIT_COMMIT = $(shell git rev-parse --short=10 HEAD)
+INI_TO_JSON = $(abspath ./utils/iniToJson.js)
 
 GAMES_DIR ?= ./games
 PLATFORM ?= web
@@ -85,7 +86,8 @@ PLUGINS =  $(PLUGINS_DIR)/$(CORE_LIB) \
 	$(PLUGINS_DIR)/$(RICE_VIDEO_LIB)
 #	$(PLUGINS_DIR)/$(VIDEO_LIB)
 
-
+UTILITY_FILES = \
+	$(BIN_DIR)/mupen64plus.json \
 
 INPUT_FILES = \
 	$(BIN_DIR)/data/InputAutoCfg.ini \
@@ -121,7 +123,7 @@ NATIVE_PLUGINS := \
 NATIVE_EXE := $(NATIVE_BIN)/mupen64plus
 NATIVE_DEPS := $(NATIVE_PLUGINS) $(NATIVE_EXE)
 
-WEB_DEPS := $(BIN_DIR)/$(TARGET_JS)
+WEB_DEPS := $(BIN_DIR)/$(TARGET_JS) $(UTILITY_FILES)
 
 ALL_DEPS := $(WEB_DEPS) 
 ifeq ($(PLATFORM), native)
@@ -342,6 +344,10 @@ $(RICE_VIDEO_DIR)/$(RICE_VIDEO_LIB_JS):
 			LDLIBS="$(CORE_LD_LIB)" \
 			OPTFLAGS="$(OPT_FLAGS) -s ERROR_ON_UNDEFINED_SYMBOLS=0 -s SIDE_MODULE=$(USE_DYNAMIC_PLUGINS) -s FULL_ES3=1 -DNO_FILTER_THREAD=1"\
 			all
+
+# exported utility file helpers
+$(BIN_DIR)/mupen64plus.json: $(CFG_DIR)/mupen64plus.ini
+	node $(INI_TO_JSON) -i $< -o $@
 
 # input files helpers
 $(BIN_DIR)/data/InputAutoCfg.ini: $(CFG_DIR)/InputAutoCfg.ini
