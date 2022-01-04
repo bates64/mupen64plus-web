@@ -5,7 +5,14 @@ declare module 'mupen64plus-web' {
     fileKey: string,
     contents: Int8Array
   }
-  export default function createMupen64PlusWeb({ }: any);
+
+  export interface EmulatorControls {
+    start: () => void,
+    pause: (netplayPauseTargetCounts?: number[]) => Promise<(number[]) | null>,
+    resume: () => void
+  }
+
+  export default function createMupen64PlusWeb({ }: any): Promise<EmulatorControls>;
   export function putSaveFile(fileName: string, fileData: ArrayBuffer): Promise<void>;
   export function getAllSaveFiles(): Promise<FileEntry[]>;
   export function findAutoInputConfig(gamepadName: string): Promise<any>;

@@ -116,7 +116,9 @@ const createMupen64PlusWeb = function(extraModuleArgs) {
     m.setErrorStatus(event);
   };
 
-  return createModule(m);
+  return createModule(m).then((module) => {
+    return module.emulatorControls;
+  });
 }
 
 export {

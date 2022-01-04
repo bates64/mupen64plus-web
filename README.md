@@ -18,7 +18,9 @@ This project is built as an ES6 module, and should one day be publicly available
 ```
 import createMupen64PlusWeb from 'mupen64plus-web';
 
-createMupen64PlusWeb({
+// Inside some async function:
+
+const emulatorControls = await createMupen64PlusWeb({
 
   // REQUIRED: This canvas' id has to be 'canvas' for... reasons
   canvas: document.getElementById('canvas'),
@@ -59,6 +61,15 @@ createMupen64PlusWeb({
     console.log("errorMessage: %s", errorMessage);
   }
 });
+
+// These should be somewhat self-explanatory. Note that
+// in version 1.x.x+ `start()` needs to be called
+// explicitly, otherwise nothing will happen.
+emulatorControls.start();
+
+emulatorControls.pause();
+
+emulatorControls.resume();
 
 ```
 

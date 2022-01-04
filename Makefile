@@ -247,7 +247,7 @@ endif
 
 OPT_FLAGS := $(OPT_LEVEL) \
 			$(DEBUG_LEVEL) \
-			-s 'EXTRA_EXPORTED_RUNTIME_METHODS=[\"ccall\", \"cwrap\", \"getValue\", \"FS\", \"setValue\"]' \
+			-s 'EXTRA_EXPORTED_RUNTIME_METHODS=[\"ccall\", \"cwrap\", \"getValue\", \"FS\", \"setValue\", \"netplay_request_pause\", \"netplay_request_resume\"]' \
 			-DEMSCRIPTEN=1 \
 			-DUSE_FRAMESKIPPER=1
 
