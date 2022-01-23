@@ -9,6 +9,7 @@ var Module = {
     emuMode: 0 // 0 = pure_interpreter (recomended) ; 1 = cached (seems to somewhat work)
   },
   romData: undefined,
+  netplay: {},
   netplayConfig: {
     player: 0 // netplay is only activated if player != 0
     // Also need to provide: 'reliableChannel' and 'unreliableChannel'
