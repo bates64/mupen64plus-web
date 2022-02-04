@@ -102,6 +102,10 @@ const createMupen64PlusWeb = function(extraModuleArgs) {
   if (!m.coreConfig.emuMode || m.coreConfig.emuMode < 0 || m.coreConfig.emuMode > 3) {
     m.coreConfig.emuMode = 0;
   }
+
+  if (m.netplayConfig.player !== 0 && m.netplayConfig.registrationId == null) {
+    m.netplayConfig.registrationId = Math.floor(Math.random() * (Math.pow(2, 31) - 1));
+  }
   
   // As a default initial behavior, pop up an alert when webgl context is lost. To make your
   // application robust, you may want to override this behavior before shipping!
