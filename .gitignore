@@ -6,6 +6,7 @@ node_modules
 *.o
 *.obj
 *.wasm
+*.wasm.map
 
 # Precompiled Headers
 *.gch

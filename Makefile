@@ -4,6 +4,7 @@
 # to run web version: 'make run-web'
 # to run native version: 'make run-native'
 
+
 GIT_COMMIT = $(shell git rev-parse --short=10 HEAD)
 INI_TO_JSON = $(abspath ./utils/iniToJson.js)
 
@@ -234,14 +235,14 @@ $(NATIVE_BIN)/mupen64plus-audio-sdl.so: $(NATIVE_BIN) $(NATIVE_AUDIO_DIR)/mupen6
 
 ifeq ($(config), debug)
 
-OPT_LEVEL = -O3 --profiling -g3 -s ASSERTIONS=1 #-Oz -s AGGRESSIVE_VARIABLE_ELIMINATION=1 -fsanitize=undefined -Wcast-align -Wover-aligned -s WARN_UNALIGNED=1
-DEBUG_LEVEL = -g2 
+OPT_LEVEL = -O2 -g3 -s NO_EXIT_RUNTIME -s ASSERTIONS=1 -s SAFE_HEAP=1 -s STACK_OVERFLOW_CHECK=1 #-Oz -s AGGRESSIVE_VARIABLE_ELIMINATION=1 -fsanitize=address -Wcast-align -Wover-aligned -s WARN_UNALIGNED=1 ASSERTIONS=0 -s NO_EXIT_RUNTIME=1 -s ALLOW_MEMORY_GROWTH -fsanitize=address 			-s INITIAL_MEMORY=$(MEMORY) #  	-s STACK_OVERFLOW_CHECK=2 -fsanitize=undefined
+DEBUG_LEVEL = -g3
 
 else
-
+#'release' = -03 -s AGGRESSIVE_VARIABLE_ELIMINATION=1
 OPT_LEVEL = -O3 -s AGGRESSIVE_VARIABLE_ELIMINATION=1
 
-//'release' = -03 -s AGGRESSIVE_VARIABLE_ELIMINATION=1
+
 endif
 
 
@@ -258,9 +259,15 @@ CORE_LD_LIB =
 ifeq ($(static-plugins), 0)
 USE_DYNAMIC_PLUGINS = 1
 USE_STATIC_PLUGINS = 0
+
+REQUIRED_PLUGINS = $(PLUGINS)
+PLUGIN_BUILD_TARGET = all
+
 else
 USE_DYNAMIC_PLUGINS = 0
 USE_STATIC_PLUGINS = 1
+
+PLUGIN_BUILD_TARGET = static
 
 CORE_LD_LIB = ../../../$(CORE_LIB_STATIC)
 STATIC_LIBRARIES = ../../../$(AUDIO_LIB_STATIC) \
@@ -270,6 +277,8 @@ STATIC_LIBRARIES = ../../../$(AUDIO_LIB_STATIC) \
 		../../../$(RICE_VIDEO_LIB_STATIC) \
 		../../../$(LIBSRC_DIR)/build/src/libsamplerate.a
 
+REQUIRED_PLUGINS = $(STATIC_PLUGINS)
+
 OPT_FLAGS += -DM64P_STATIC_PLUGINS=1
 endif
 
@@ -277,7 +286,8 @@ endif
 $(PLUGINS_DIR)/%.so : %/projects/unix/%.wasm
 	cp "$<" "$@"
 
-$(CORE_LIB_STATIC) : $(CORE_DIR)/$(CORE_LIB_JS)
+$(CORE_DIR)/$(CORE_LIB_JS) : build-core
+$(CORE_LIB_STATIC) : build-core
 
 # libmupen64plus.so.2 deviates from standard naming
 $(PLUGINS_DIR)/$(CORE_LIB) : $(CORE_DIR)/$(CORE_LIB_JS)
@@ -288,9 +298,11 @@ $(PLUGINS_DIR)/$(AUDIO_LIB) : $(AUDIO_DIR)/$(AUDIO_LIB_JS)
 	mkdir -p $(PLUGINS_DIR)
 	cp "$<" "$@"
 
-$(AUDIO_LIB_STATIC) : $(AUDIO_DIR)/$(AUDIO_LIB_JS)
+$(AUDIO_DIR)/$(AUDIO_LIB_JS) : build-audio
+$(AUDIO_LIB_STATIC) : build-audio
 
-$(VIDEO_LIB_STATIC) : $(VIDEO_DIR)/$(VIDEO_LIB_JS)
+$(VIDEO_DIR)/$(VIDEO_LIB_JS) : build-audio
+$(VIDEO_LIB_STATIC) : build-audio
 
 $(PLUGINS_DIR)/$(VIDEO_LIB) : $(VIDEO_DIR)/$(VIDEO_LIB_JS)
 	mkdir -p $(PLUGINS_DIR)
@@ -300,19 +312,22 @@ $(PLUGINS_DIR)/$(RICE_VIDEO_LIB) : $(RICE_VIDEO_DIR)/$(RICE_VIDEO_LIB_JS)
 	mkdir -p $(PLUGINS_DIR)
 	cp -f "$<" "$@"
 
-$(RICE_VIDEO_LIB_STATIC) : $(RICE_VIDEO_DIR)/$(RICE_VIDEO_LIB_JS)
+$(RICE_VIDEO_DIR)/$(RICE_VIDEO_LIB_JS) : build-rice-video
+$(RICE_VIDEO_LIB_STATIC) : build-rice-video
 
 $(PLUGINS_DIR)/$(INPUT_LIB) : $(INPUT_DIR)/$(INPUT_LIB_JS)
 	mkdir -p $(PLUGINS_DIR)
 	cp "$<" "$@"
 
-$(INPUT_LIB_STATIC) : $(INPUT_DIR)/$(INPUT_LIB_JS);
+$(INPUT_DIR)/$(INPUT_LIB_JS) : build-input
+$(INPUT_LIB_STATIC) : build-input
 
 $(PLUGINS_DIR)/$(RSP_LIB) : $(RSP_DIR)/$(RSP_LIB_JS)
 	mkdir -p $(PLUGINS_DIR)
 	cp "$<" "$@"
 
-$(RSP_LIB_STATIC) : $(RSP_DIR)/$(RSP_LIB_JS)
+$(RSP_DIR)/$(RSP_LIB_JS) : build-rsp
+$(RSP_LIB_STATIC) : build-rsp
 
 $(BIN_DIR) :
 	#Creating output directory
@@ -320,7 +335,7 @@ $(BIN_DIR) :
 
 rice: $(RICE_VIDEO_DIR)/$(RICE_VIDEO_LIB_JS)
 
-$(RICE_VIDEO_DIR)/$(RICE_VIDEO_LIB_JS):
+build-rice-video: .FORCE
 	cd $(RICE_VIDEO_DIR) && \
 			emmake $(MAKE) \
 			CROSS_COMPILE="" \
@@ -343,7 +358,7 @@ $(RICE_VIDEO_DIR)/$(RICE_VIDEO_LIB_JS):
 			LOADLIBES="" \
 			LDLIBS="$(CORE_LD_LIB)" \
 			OPTFLAGS="$(OPT_FLAGS) -s ERROR_ON_UNDEFINED_SYMBOLS=0 -s SIDE_MODULE=$(USE_DYNAMIC_PLUGINS) -s FULL_ES3=1 -DNO_FILTER_THREAD=1"\
-			all
+			$(PLUGIN_BUILD_TARGET)
 
 # exported utility file helpers
 $(BIN_DIR)/mupen64plus.json: $(CFG_DIR)/mupen64plus.ini
@@ -388,7 +403,7 @@ $(BIN_DIR)/data/mupen64plus.ini: $(CFG_DIR)/mupen64plus.ini
 $(BIN_DIR)/data/mupencheat.txt: $(CFG_DIR)/mupencheat.txt
 	cp $< $@
 
-$(BIN_DIR)/$(TARGET_JS): $(INDEX_TEMPLATE) $(PLUGINS) $(STATIC_PLUGINS) $(INPUT_FILES)
+$(BIN_DIR)/$(TARGET_JS): $(INDEX_TEMPLATE) $(REQUIRED_PLUGINS) $(INPUT_FILES)
 	@mkdir -p $(BIN_DIR)
 	rm -f $@
 	# building UI (program entry point)
@@ -431,7 +446,7 @@ $(BIN_DIR)/$(TARGET_JS): $(INDEX_TEMPLATE) $(PLUGINS) $(STATIC_PLUGINS) $(INPUT_
 
 core: $(CORE_DIR)/$(CORE_LIB)
 
-$(CORE_DIR)/$(CORE_LIB_JS) :
+build-core: .FORCE
 	cd $(CORE_DIR) && \
 	emmake make \
 		POSTFIX=-web \
@@ -453,10 +468,10 @@ $(CORE_DIR)/$(CORE_LIB_JS) :
 		NETPLAY=1 \
 		V=1 \
 		OPTFLAGS="$(OPT_FLAGS) -s ERROR_ON_UNDEFINED_SYMBOLS=0 -s SIDE_MODULE=$(USE_DYNAMIC_PLUGINS) -s EXPORT_ALL=1 -s INITIAL_MEMORY=$(MEMORY) -DONSCREEN_FPS=1 -s USE_SDL=2 -s ASYNCIFY=1 -I ../../src/api --js-library ../../../mupen64plus-core-web-netplay/src/jslib/corelib.js" \
-		all
+		$(PLUGIN_BUILD_TARGET)
 
 
-libsrc:
+$(LIBSRC_DIR)/build/src/libsamplerate.a:
 	cd $(LIBSRC_DIR) && \
 	mkdir -p build && \
 	cd build && \
@@ -465,7 +480,7 @@ libsrc:
 
 audio: $(AUDIO_DIR)/$(AUDIO_LIB)
 
-$(AUDIO_DIR)/$(AUDIO_LIB_JS) : libsrc
+build-audio: $(LIBSRC_DIR)/build/src/libsamplerate.a .FORCE
 	cd $(AUDIO_DIR) && \
 		emmake make \
 		POSTFIX=-web \
@@ -485,11 +500,11 @@ $(AUDIO_DIR)/$(AUDIO_LIB_JS) : libsrc
 		V=1 \
 		SRC_LDLIBS="../../../$(LIBSRC_DIR)/build/src/libsamplerate.a" \
 		OPTFLAGS="$(OPT_FLAGS) -s ERROR_ON_UNDEFINED_SYMBOLS=0 -s SIDE_MODULE=$(USE_DYNAMIC_PLUGINS) -fPIC -DNO_FILTER_THREAD=1 -I../../../$(LIBSRC_DIR)/include"\
-		all
+		$(PLUGIN_BUILD_TARGET)
 
 glide: $(VIDEO_DIR)/$(VIDEO_LIB)
 
-$(VIDEO_DIR)/$(VIDEO_LIB_JS):
+build-video: 
 	cd $(VIDEO_DIR) && \
 	emmake make \
 		POSTFIX=-web \
@@ -510,14 +525,14 @@ $(VIDEO_DIR)/$(VIDEO_LIB_JS):
 		LOADLIBES="" \
 		LDLIBS="$(CORE_LD_LIB)" \
 		OPTFLAGS="$(OPT_FLAGS) -s SIDE_MODULE=$(USE_DYNAMIC_PLUGINS) -s FULL_ES3=1 -DNO_FILTER_THREAD=1 -s USE_BOOST_HEADERS=1" \
-		all
+		$(PLUGIN_BUILD_TARGET)
 
 input: $(INPUT_DIR)/$(INPUT_LIB)
 
 
 # ../../../mupen64plus-core-web-netplay/projects/unix/libmupen64plus-web.a
 
-$(INPUT_DIR)/$(INPUT_LIB_JS): $(CORE_LIB_STATIC)
+build-input: .FORCE
 	cd $(INPUT_DIR) && \
 	emmake make \
 		POSTFIX=-web \
@@ -536,11 +551,11 @@ $(INPUT_DIR)/$(INPUT_LIB_JS): $(CORE_LIB_STATIC)
 		V=1 \
 		LDLIBS="" \
 		OPTFLAGS="$(OPT_FLAGS) -s ERROR_ON_UNDEFINED_SYMBOLS=0 -s SIDE_MODULE=$(USE_DYNAMIC_PLUGINS) -s ASYNCIFY=1 --js-library ../../../mupen64plus-input-sdl/src/jslib/input-lib.js" \
-		all
+		$(PLUGIN_BUILD_TARGET)
 
 rsp: $(RSP_DIR)/$(RSP_LIB)
 
-$(RSP_DIR)/$(RSP_LIB_JS) :
+build-rsp: .FORCE
 	cd $(RSP_DIR)&& \
 	emmake make \
 		POSTFIX=-web \
@@ -558,7 +573,7 @@ $(RSP_DIR)/$(RSP_LIB_JS) :
 		GLU_CFLAGS="" \
 		V=1 \
 		OPTFLAGS="$(OPT_FLAGS) -s ERROR_ON_UNDEFINED_SYMBOLS=0 -s SIDE_MODULE=$(USE_DYNAMIC_PLUGINS) -DVIDEO_HLE_ALLOWED=1" \
-		all
+		$(PLUGIN_BUILD_TARGET)
 
 clean-ui:
 	rm -rf $(UI_DIR)/_obj$(POSTFIX)
