@@ -235,12 +235,12 @@ $(NATIVE_BIN)/mupen64plus-audio-sdl.so: $(NATIVE_BIN) $(NATIVE_AUDIO_DIR)/mupen6
 
 ifeq ($(config), debug)
 
-OPT_LEVEL = -O2 -g3 -s NO_EXIT_RUNTIME -s ASSERTIONS=1 -s SAFE_HEAP=1 -s STACK_OVERFLOW_CHECK=1 #-Oz -s AGGRESSIVE_VARIABLE_ELIMINATION=1 -fsanitize=address -Wcast-align -Wover-aligned -s WARN_UNALIGNED=1 ASSERTIONS=0 -s NO_EXIT_RUNTIME=1 -s ALLOW_MEMORY_GROWTH -fsanitize=address 			-s INITIAL_MEMORY=$(MEMORY) #  	-s STACK_OVERFLOW_CHECK=2 -fsanitize=undefined
+OPT_LEVEL = -O1 -g3 -s -s ASSERTIONS=1 -s STACK_OVERFLOW_CHECK=1 #-Oz -s AGGRESSIVE_VARIABLE_ELIMINATION=1 -fsanitize=address -Wcast-align -Wover-aligned -s WARN_UNALIGNED=1 ASSERTIONS=0 -s NO_EXIT_RUNTIME=1 -s ALLOW_MEMORY_GROWTH -fsanitize=address 			-s INITIAL_MEMORY=$(MEMORY) #  	-s STACK_OVERFLOW_CHECK=2 -fsanitize=undefined
 DEBUG_LEVEL = -g3
 
 else
 #'release' = -03 -s AGGRESSIVE_VARIABLE_ELIMINATION=1
-OPT_LEVEL = -O3 -s AGGRESSIVE_VARIABLE_ELIMINATION=1
+OPT_LEVEL = -O3 -s AGGRESSIVE_VARIABLE_ELIMINATION=1 -s NO_EXIT_RUNTIME -s ALLOW_MEMORY_GROWTH=1
 
 
 endif
@@ -439,7 +439,7 @@ $(BIN_DIR)/$(TARGET_JS): $(INDEX_TEMPLATE) $(REQUIRED_PLUGINS) $(INPUT_FILES)
 			-s ENVIRONMENT='web' -s EXPORT_ES6=0 \
 			-s NO_EXIT_RUNTIME=1 -s USE_ZLIB=1 \
 			-s USE_SDL=2 -s USE_LIBPNG=1 -s FULL_ES3=1 \
-			-s ASYNCIFY=1 -s 'ASYNCIFY_IMPORTS=[\"waitForReliableMessage\",\"waitForUnreliableMessages\",\"findAutoInputConfigName\"]' \
+			-s ASYNCIFY=1 -s 'ASYNCIFY_IMPORTS=[\"waitForReliableMessage\",\"waitForAsyncAction\",\"findAutoInputConfigName\", \"sdl_init_audio_device\"]' \
 			-s USE_BOOST_HEADERS=1 \
 			-DEMSCRIPTEN=1 --pre-js $(PRE_JS) --post-js $(POST_JS)" \
 			all
