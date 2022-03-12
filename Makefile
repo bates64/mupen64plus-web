@@ -31,7 +31,7 @@ AUDIO ?= mupen64plus-audio-sdl
 AUDIO_DIR = $(AUDIO)/projects/unix/
 AUDIO_LIB = $(AUDIO).so
 AUDIO_LIB_JS = $(AUDIO)-web.wasm
-AUDIO_LIB_STATIC = $(AUDIO_DIR)/$(AUDIO)-web.a
+AUDIO_LIB_STATIC = $(AUDIO_DIR)$(AUDIO)-web.a
 
 
 NATIVE_AUDIO := mupen64plus-audio-sdl
@@ -48,7 +48,7 @@ RICE = mupen64plus-video-rice-web-netplay
 RICE_VIDEO_LIB = $(RICE)-web$(POSTFIX)$(SO_EXTENSION)
 RICE_VIDEO_LIB_JS = $(RICE)$(POSTFIX).wasm
 RICE_VIDEO_DIR = $(RICE)/projects/unix/
-RICE_VIDEO_LIB_STATIC = $(RICE_VIDEO_DIR)/$(RICE)-web.a
+RICE_VIDEO_LIB_STATIC = $(RICE_VIDEO_DIR)$(RICE)-web.a
 
 INPUT ?= mupen64plus-input-sdl
 INPUT_DIR = $(INPUT)/projects/unix

@@ -9,7 +9,8 @@ declare module 'mupen64plus-web' {
   export interface EmulatorControls {
     start: () => void,
     pause: (netplayPauseTargetCounts?: number[]) => Promise<(number[]) | null>,
-    resume: () => void
+    resume: () => void,
+    forceDumpSaveFiles: () => Promise<void>
   }
 
   export default function createMupen64PlusWeb({ }: any): Promise<EmulatorControls>;
