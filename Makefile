@@ -439,7 +439,7 @@ $(BIN_DIR)/$(TARGET_JS): $(INDEX_TEMPLATE) $(REQUIRED_PLUGINS) $(INPUT_FILES)
 			-s ENVIRONMENT='web' -s EXPORT_ES6=0 \
 			-s NO_EXIT_RUNTIME=1 -s USE_ZLIB=1 \
 			-s USE_SDL=2 -s USE_LIBPNG=1 -s FULL_ES3=1 \
-			-s ASYNCIFY=1 -s 'ASYNCIFY_IMPORTS=[\"waitForReliableMessage\",\"waitForAsyncAction\",\"findAutoInputConfigName\", \"sdl_init_audio_device\"]' \
+			-s ASYNCIFY=1 -s 'ASYNCIFY_IMPORTS=[\"waitForReliableMessage\",\"waitForAsyncAction\",\"findAutoInputConfigName\", \"sdl_init_audio_device\", \"initIDBFS\", \"writeROM\", \"copyInputAutoConfig\", \"startCore\"]' \
 			-s USE_BOOST_HEADERS=1 \
 			-DEMSCRIPTEN=1 --pre-js $(PRE_JS) --post-js $(POST_JS)" \
 			all
