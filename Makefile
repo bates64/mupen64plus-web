@@ -71,22 +71,6 @@ PRE_JS = $(abspath $(SCRIPTS_DIR)/prefix.js)
 POST_JS = $(abspath $(SCRIPTS_DIR)/postfix.js)
 MODULE_JS = module.js
 
-
-STATIC_PLUGINS = $(CORE_LIB_STATIC) \
-		$(AUDIO_LIB_STATIC) \
-		$(INPUT_LIB_STATIC) \
-		$(RSP_LIB_STATIC) \
-		$(RICE_VIDEO_LIB_STATIC)
-#		$(VIDEO_LIB_STATIC)
-
-
-PLUGINS =  $(PLUGINS_DIR)/$(CORE_LIB) \
-	$(PLUGINS_DIR)/$(AUDIO_LIB) \
-	$(PLUGINS_DIR)/$(INPUT_LIB) \
-	$(PLUGINS_DIR)/$(RSP_LIB) \
-	$(PLUGINS_DIR)/$(RICE_VIDEO_LIB)
-#	$(PLUGINS_DIR)/$(VIDEO_LIB)
-
 UTILITY_FILES = \
 	$(BIN_DIR)/mupen64plus.json \
 
@@ -260,7 +244,12 @@ ifeq ($(static-plugins), 0)
 USE_DYNAMIC_PLUGINS = 1
 USE_STATIC_PLUGINS = 0
 
-REQUIRED_PLUGINS = $(PLUGINS)
+REQUIRED_CORE_PLUGIN_FILES = $(PLUGINS_DIR)/$(CORE_LIB)
+REQUIRED_AUDIO_PLUGIN_FILES = $(PLUGINS_DIR)/$(AUDIO_LIB)
+REQUIRED_INPUT_PLUGIN_FILES = $(PLUGINS_DIR)/$(INPUT_LIB)
+REQUIRED_VIDEO_PLUGIN_FILES = $(PLUGINS_DIR)/$(RICE_VIDEO_LIB)
+REQUIRED_RSP_PLUGIN_FILES = $(PLUGINS_DIR)/$(RSP_LIB)
+
 PLUGIN_BUILD_TARGET = all
 
 else
@@ -277,17 +266,24 @@ STATIC_LIBRARIES = ../../../$(AUDIO_LIB_STATIC) \
 		../../../$(RICE_VIDEO_LIB_STATIC) \
 		../../../$(LIBSRC_DIR)/build/src/libsamplerate.a
 
-REQUIRED_PLUGINS = $(STATIC_PLUGINS)
+REQUIRED_CORE_PLUGIN_FILES = $(CORE_LIB_STATIC)
+REQUIRED_AUDIO_PLUGIN_FILES = $(AUDIO_LIB_STATIC)
+REQUIRED_INPUT_PLUGIN_FILES = $(INPUT_LIB_STATIC)
+REQUIRED_VIDEO_PLUGIN_FILES = $(RICE_VIDEO_LIB_STATIC)
+REQUIRED_RSP_PLUGIN_FILES = $(RSP_LIB_STATIC)
 
 OPT_FLAGS += -DM64P_STATIC_PLUGINS=1
 endif
 
+REQUIRED_PLUGINS = $(REQUIRED_CORE_PLUGIN_FILES) \
+	$(REQUIRED_AUDIO_PLUGIN_FILES) \
+	$(REQUIRED_INPUT_PLUGIN_FILES) \
+	$(REQUIRED_VIDEO_PLUGIN_FILES) \
+	$(REQUIRED_RSP_PLUGIN_FILES)
+
 
 $(PLUGINS_DIR)/%.so : %/projects/unix/%.wasm
 	cp "$<" "$@"
-
-$(CORE_DIR)/$(CORE_LIB_JS) : build-core
-$(CORE_LIB_STATIC) : build-core
 
 # libmupen64plus.so.2 deviates from standard naming
 $(PLUGINS_DIR)/$(CORE_LIB) : $(CORE_DIR)/$(CORE_LIB_JS)
@@ -298,12 +294,6 @@ $(PLUGINS_DIR)/$(AUDIO_LIB) : $(AUDIO_DIR)/$(AUDIO_LIB_JS)
 	mkdir -p $(PLUGINS_DIR)
 	cp "$<" "$@"
 
-$(AUDIO_DIR)/$(AUDIO_LIB_JS) : build-audio
-$(AUDIO_LIB_STATIC) : build-audio
-
-$(VIDEO_DIR)/$(VIDEO_LIB_JS) : build-audio
-$(VIDEO_LIB_STATIC) : build-audio
-
 $(PLUGINS_DIR)/$(VIDEO_LIB) : $(VIDEO_DIR)/$(VIDEO_LIB_JS)
 	mkdir -p $(PLUGINS_DIR)
 	cp "$<" "$@"
@@ -312,22 +302,13 @@ $(PLUGINS_DIR)/$(RICE_VIDEO_LIB) : $(RICE_VIDEO_DIR)/$(RICE_VIDEO_LIB_JS)
 	mkdir -p $(PLUGINS_DIR)
 	cp -f "$<" "$@"
 
-$(RICE_VIDEO_DIR)/$(RICE_VIDEO_LIB_JS) : build-rice-video
-$(RICE_VIDEO_LIB_STATIC) : build-rice-video
-
 $(PLUGINS_DIR)/$(INPUT_LIB) : $(INPUT_DIR)/$(INPUT_LIB_JS)
 	mkdir -p $(PLUGINS_DIR)
 	cp "$<" "$@"
 
-$(INPUT_DIR)/$(INPUT_LIB_JS) : build-input
-$(INPUT_LIB_STATIC) : build-input
-
 $(PLUGINS_DIR)/$(RSP_LIB) : $(RSP_DIR)/$(RSP_LIB_JS)
 	mkdir -p $(PLUGINS_DIR)
 	cp "$<" "$@"
-
-$(RSP_DIR)/$(RSP_LIB_JS) : build-rsp
-$(RSP_LIB_STATIC) : build-rsp
 
 $(BIN_DIR) :
 	#Creating output directory
@@ -335,7 +316,7 @@ $(BIN_DIR) :
 
 rice: $(RICE_VIDEO_DIR)/$(RICE_VIDEO_LIB_JS)
 
-build-rice-video: .FORCE
+$(REQUIRED_VIDEO_PLUGIN_FILES): .FORCE
 	cd $(RICE_VIDEO_DIR) && \
 			emmake $(MAKE) \
 			CROSS_COMPILE="" \
@@ -446,7 +427,7 @@ $(BIN_DIR)/$(TARGET_JS): $(INDEX_TEMPLATE) $(REQUIRED_PLUGINS) $(INPUT_FILES)
 
 core: $(CORE_DIR)/$(CORE_LIB)
 
-build-core: .FORCE
+$(REQUIRED_CORE_PLUGIN_FILES): .FORCE
 	cd $(CORE_DIR) && \
 	emmake make \
 		POSTFIX=-web \
@@ -480,7 +461,7 @@ $(LIBSRC_DIR)/build/src/libsamplerate.a:
 
 audio: $(AUDIO_DIR)/$(AUDIO_LIB)
 
-build-audio: $(LIBSRC_DIR)/build/src/libsamplerate.a .FORCE
+$(REQUIRED_AUDIO_PLUGIN_FILES): $(LIBSRC_DIR)/build/src/libsamplerate.a .FORCE
 	cd $(AUDIO_DIR) && \
 		emmake make \
 		POSTFIX=-web \
@@ -532,7 +513,7 @@ input: $(INPUT_DIR)/$(INPUT_LIB)
 
 # ../../../mupen64plus-core-web-netplay/projects/unix/libmupen64plus-web.a
 
-build-input: .FORCE
+$(REQUIRED_INPUT_PLUGIN_FILES): .FORCE
 	cd $(INPUT_DIR) && \
 	emmake make \
 		POSTFIX=-web \
@@ -555,7 +536,7 @@ build-input: .FORCE
 
 rsp: $(RSP_DIR)/$(RSP_LIB)
 
-build-rsp: .FORCE
+$(REQUIRED_RSP_PLUGIN_FILES): .FORCE
 	cd $(RSP_DIR)&& \
 	emmake make \
 		POSTFIX=-web \
