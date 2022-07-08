@@ -222,10 +222,13 @@ ifeq ($(config), debug)
 OPT_LEVEL = -O1 -g3 -s -s ASSERTIONS=1 -s STACK_OVERFLOW_CHECK=1 #-Oz -s AGGRESSIVE_VARIABLE_ELIMINATION=1 -fsanitize=address -Wcast-align -Wover-aligned -s WARN_UNALIGNED=1 ASSERTIONS=0 -s NO_EXIT_RUNTIME=1 -s ALLOW_MEMORY_GROWTH -fsanitize=address 			-s INITIAL_MEMORY=$(MEMORY) #  	-s STACK_OVERFLOW_CHECK=2 -fsanitize=undefined
 DEBUG_LEVEL = -g3
 
-else
-#'release' = -03 -s AGGRESSIVE_VARIABLE_ELIMINATION=1
+else ifeq ($(config), release)
+
 OPT_LEVEL = -O3 -s AGGRESSIVE_VARIABLE_ELIMINATION=1 -s NO_EXIT_RUNTIME -s ALLOW_MEMORY_GROWTH=1
 
+else
+
+OPT_LEVEL = -O3 -g3 -s NO_EXIT_RUNTIME -s ALLOW_MEMORY_GROWTH=1
 
 endif
 
@@ -456,7 +459,7 @@ $(LIBSRC_DIR)/build/src/libsamplerate.a:
 	cd $(LIBSRC_DIR) && \
 	mkdir -p build && \
 	cd build && \
-	emcmake cmake .. && \
+	emcmake cmake -DCMAKE_CXX_FLAGS="$(OPT_FLAGS) -DEMSCRIPTEN=1" -DCMAKE_C_FLAGS="$(OPT_FLAGS) -DEMSCRIPTEN=1" .. && \
 	emmake make
 
 audio: $(AUDIO_DIR)/$(AUDIO_LIB)
@@ -588,6 +591,7 @@ clean-web:
 	rm -fr $(RICE_VIDEO_DIR)/_obj$(POSTFIX)
 	rm -f $(RICE_VIDEO_LIB_STATIC)
 	rm -fr $(UI_DIR)/_obj$(POSTFIX)
+	rm -rf $(LIBSRC_DIR)/build
 
 clean-video:
 	rm -f $(RICE_VIDEO_LIB_STATIC)
