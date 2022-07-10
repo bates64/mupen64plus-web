@@ -9,7 +9,7 @@ If you have the Emscripten SDK installed (https://kripken.github.io/emscripten-s
 
 Debug build config is also available (i.e. ```make config=debug ...```
 
-This project is known to build well with emscripten 2.0.16.
+This project is known to build well with emscripten 3.1.8.
 
 # Usage
 
