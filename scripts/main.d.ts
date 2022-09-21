@@ -14,7 +14,24 @@ declare module 'mupen64plus-web' {
     forceDumpSaveFiles: () => Promise<void>
   }
 
-  export default function createMupen64PlusWeb({ }: any): Promise<EmulatorControls>;
+  export interface CoreConfig {
+    canvas: HTMLCanvasElement,
+    romData: ArrayBuffer,
+    beginStats?: () => void,
+    endStats?: () => void,
+    coreConfig?: {
+      emuMode?: number
+    },
+    netplayConfig?: {
+      player: number,
+      reliableChannel: any,
+      unreliableChannel: any
+    },
+    locateFile?: (path: string, prefix: string) => string,
+    setErrorStatus?: (errorMessage: string) => void
+  }
+
+  export default function createMupen64PlusWeb(config: CoreConfig): Promise<EmulatorControls>;
   export function putSaveFile(fileName: string, fileData: ArrayBuffer): Promise<void>;
   export function getAllSaveFiles(): Promise<FileEntry[]>;
   export function findAutoInputConfig(gamepadName: string): Promise<any>;
