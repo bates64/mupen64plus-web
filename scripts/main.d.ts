@@ -12,6 +12,9 @@ declare module 'mupen64plus-web' {
     pause: (netplayPauseTargetCounts?: number[]) => Promise<(number[]) | null>,
     resume: () => void,
     forceDumpSaveFiles: () => Promise<void>
+    softReset(): void
+    hardReset(): void
+    advanceFrame(): void
   }
 
   export interface CoreConfig {
