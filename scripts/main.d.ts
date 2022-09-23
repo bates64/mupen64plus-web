@@ -10,7 +10,7 @@ declare module 'mupen64plus-web' {
     start: () => Promise<void>,
     stop: () => void,
     pause: (netplayPauseTargetCounts?: number[]) => Promise<(number[]) | null>,
-    resume: () => void,
+    resume: () => Promise<void>,
     forceDumpSaveFiles: () => Promise<void>
     softReset(): void
     hardReset(): void
