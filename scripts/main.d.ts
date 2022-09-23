@@ -16,6 +16,7 @@ declare module 'mupen64plus-web' {
     hardReset(): void
     advanceFrame(): void
     reloadRom(romData: ArrayBuffer): Promise<void>
+    getDram(): Uint32Array
   }
 
   export interface CoreConfig {
