@@ -5,7 +5,7 @@ node_modules
 *.lo
 *.o
 *.obj
-*.wasm
+#*.wasm
 *.wasm.map
 
 # Precompiled Headers
