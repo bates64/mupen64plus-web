@@ -1,4 +1,4 @@
-import createModule from "./index.3584e22de7.js"
+import createModule from "./index.eabfa58fa3.js"
 // The correct import for createModule will be injected during the build process
 import baseModule from './module';
 import { getFile, putFile } from './idbfs-file-utils';

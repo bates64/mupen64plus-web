@@ -427,6 +427,7 @@ $(BIN_DIR)/$(TARGET_JS): $(INDEX_TEMPLATE) $(REQUIRED_PLUGINS) $(INPUT_FILES)
 			-s USE_BOOST_HEADERS=1 \
 			-DEMSCRIPTEN=1 --pre-js $(PRE_JS) --post-js $(POST_JS)" \
 			all
+	sed -i 's/typeof process/\"undefined\"/g' $@
 
 core: $(CORE_DIR)/$(CORE_LIB)
 
