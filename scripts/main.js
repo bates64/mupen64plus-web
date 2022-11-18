@@ -1,7 +1,7 @@
 // The correct import for createModule will be injected during the build process
 import baseModule from './module';
 import { getFile, putFile } from './idbfs-file-utils';
-import { findAutoInputConfig, writeAutoInputConfig } from './gamepad-utils';
+import { findAutoInputConfig, preloadAutoInputConfig, writeAutoInputConfig } from './gamepad-utils';
 
 /*
  * Saves the specified file to the IndexedDB store where 
@@ -129,6 +129,7 @@ export {
   putSaveFile,
   getAllSaveFiles,
   findAutoInputConfig,
+  preloadAutoInputConfig,
   writeAutoInputConfig
 }
 export default createMupen64PlusWeb;

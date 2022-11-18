@@ -1,4 +1,17 @@
+import axios from 'axios';
 import { getFile, putFile } from './idbfs-file-utils';
+
+export function preloadAutoInputConfig(publicPath, shouldForce) {
+
+  return getFile('/mupen64plus/data/InputAutoCfg.ini').then((result) => {
+    if (!result.contents || shouldForce) {
+      return axios.get(`${publicPath}/InputAutoCfg.ini`).then((resp) => {
+
+        return putFile('/mupen64plus/data/InputAutoCfg.ini',  new TextEncoder().encode(resp.data));
+      });
+    }
+  });
+}
 
 export function findAutoInputConfig(joystickName) {
   return getFile('/mupen64plus/data/InputAutoCfg.ini').then((result) => {
