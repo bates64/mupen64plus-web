@@ -6,6 +6,7 @@ var Module = {
 
   // mupen64plus config
   coreConfig: {
+    mainLoopTimingMode: 0, // 0 = requestAnimationFrame, 1+ = setTimeout(n)
     emuMode: 0 // 0 = pure_interpreter (recomended) ; 1 = cached (seems to somewhat work)
   },
   romData: undefined,
