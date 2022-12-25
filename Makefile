@@ -87,6 +87,9 @@ INPUT_FILES = \
 	$(BIN_DIR)/data/mupen64plus.ini \
 	# $(BIN_DIR)/data/Glide64mk2.ini \
 
+BENCHMARK_DEPS = \
+	mupen64plus-web-benchmark/node_modules
+
 OPT_LEVEL ?= -O2
 DEBUG_LEVEL ?=
 
@@ -116,6 +119,9 @@ ifeq ($(PLATFORM), native)
 endif
 
 all: $(ALL_DEPS)
+
+run-benchmark: $(BENCHMARK_DEPS)
+	cd mupen64plus-web-benchmark && npm run benchmark
 
 .FORCE:
 
@@ -320,6 +326,9 @@ $(PLUGINS_DIR)/$(RSP_LIB) : $(RSP_DIR)/$(RSP_LIB_JS)
 $(BIN_DIR) :
 	#Creating output directory
 	mkdir -p $(BIN_DIR)
+
+$(BENCHMARK_DEPS):
+	cd mupen64plus-web-benchmark && npm i
 
 rice: $(RICE_VIDEO_DIR)/$(RICE_VIDEO_LIB_JS)
 

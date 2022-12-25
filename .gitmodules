@@ -25,3 +25,6 @@
 [submodule "deps/libsamplerate"]
 	path = deps/libsamplerate
 	url = git@github.com:cheinr/libsamplerate.git
+[submodule "mupen64plus-web-benchmark"]
+	path = mupen64plus-web-benchmark
+	url = git@github.com:cheinr/mupen64plus-web-benchmark.git
